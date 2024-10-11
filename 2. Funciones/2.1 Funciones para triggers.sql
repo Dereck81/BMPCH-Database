@@ -26,7 +26,7 @@
 CREATE OR REPLACE FUNCTION fn_verificar_requisitos_prestamos()
 RETURNS TRIGGER AS $$
 DECLARE
-    f_estado_carnet BOOLEAN;
+f_estado_carnet BOOLEAN;
     f_recurso_textual_disponible BOOLEAN;
     f_recurso_textual_id BIGINT;
     f_recurso_textual_stock_disp INT;
@@ -42,7 +42,7 @@ BEGIN
 
     IF NOT f_estado_carnet THEN
         RAISE EXCEPTION 'El estado del carnet del usuario (%) no está activo', NEW.pres_usuario_id;
-    END IF;
+END IF;
 
     f_recurso_textual_disponible := (
         SELECT reco_disponible FROM tb_recurso_textual_codigo
@@ -51,7 +51,7 @@ BEGIN
 
     IF NOT f_recurso_textual_disponible THEN
         RAISE EXCEPTION 'El recurso textual no está disponible.';
-    END IF;
+END IF;
 
     f_recurso_textual_id := (
         SELECT reco_recurso_textual_id FROM tb_recurso_textual_codigo
@@ -65,11 +65,9 @@ BEGIN
 
     IF f_recurso_textual_stock_disp < 2 THEN
         RAISE EXCEPTION 'No se puede realizar la operación, debe de quedar al menos un ejemplar en la biblioteca';
-    END IF;
+END IF;
 
 END;
 $$ LANGUAGE plpgsql;
 
 
-
--- Creación de funciones para cualquier uso.
