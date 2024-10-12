@@ -2,7 +2,14 @@
  Base de datos hecha en PostgreSQL
 */
 
-CREATE DATABASE bmpch;
+CREATE USER bmpch_user WITH PASSWORD 'Jd99E5;)ZJ$5+%(+';
+
+CREATE DATABASE bmpch OWNER bmpch_user;
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to bmpch_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to bmpch_user;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to bmpch_user;
+GRANT ALL PRIVILEGES ON SCHEMA public TO bmpch_user;
 
 \c bmpch;
 
@@ -149,9 +156,23 @@ CREATE TABLE IF NOT EXISTS tb_recurso_textual (
 	CONSTRAINT chk_recurso_textual_numero_paginas CHECK (rete_num_paginas > 0)
 );
 
+-- Tabla usuarios
+CREATE TABLE IF NOT EXISTS tb_usuario (
+	usua_id BIGSERIAL PRIMARY KEY NOT NULL,
+	usua_rol_usuario_id SMALLINT NOT NULL,
+	usua_tipo_documento_id SMALLINT NOT NULL,
+	usua_documento VARCHAR(20) UNIQUE NOT NULL,
+	usua_psk VARCHAR(255) NOT NULL,
+	CONSTRAINT fk_usuario_cliente FOREIGN KEY (usua_cliente_id) REFERENCES tb_cliente(clie_id),
+	CONSTRAINT fk_usuario_rol_usuario FOREIGN KEY (usua_rol_usuario_id) REFERENCES tb_rol_usuario(rolu_id),
+	CONSTRAINT fk_usuario_tipo_documento FOREIGN KEY (usua_tipo_documento_id) REFERENCES tb_tipo_documento(tido_id),
+	CONSTRAINT chk_usuario_documento CHECK (usua_documento ~ '^\d{8,20}$')
+);
+
 -- Tabla clientes
 CREATE TABLE IF NOT EXISTS tb_cliente (
 	clie_id BIGSERIAL PRIMARY KEY NOT NULL,
+    clie_usuario_id BIGINT UNIQUE NOT NULL,
 	clie_nombre VARCHAR(255) NOT NULL,
 	clie_apellido_paterno VARCHAR(255) NOT NULL,
 	clie_apellido_materno VARCHAR(255) NOT NULL,
@@ -167,20 +188,6 @@ CREATE TABLE IF NOT EXISTS tb_cliente (
 	CONSTRAINT fk_cliente_nivel_educativo FOREIGN KEY (clie_nivel_educativo_id) REFERENCES tb_nivel_educativo(nied_id),
 	CONSTRAINT chk_cliente_correo CHECK (clie_correo ~ '^[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,5}$'),
 	CONSTRAINT chk_cliente_telefono CHECK (clie_telefono ~ '^\d{9}$')
-);
-
--- Tabla usuarios
-CREATE TABLE IF NOT EXISTS tb_usuario (
-	usua_id BIGSERIAL PRIMARY KEY NOT NULL,
-	usua_cliente_id BIGINT UNIQUE NOT NULL,
-	usua_rol_usuario_id SMALLINT NOT NULL,
-	usua_tipo_documento_id SMALLINT NOT NULL,
-	usua_documento VARCHAR(20) UNIQUE NOT NULL,
-	usua_psk VARCHAR(255) NOT NULL,
-	CONSTRAINT fk_usuario_cliente FOREIGN KEY (usua_cliente_id) REFERENCES tb_cliente(clie_id),
-	CONSTRAINT fk_usuario_rol_usuario FOREIGN KEY (usua_rol_usuario_id) REFERENCES tb_rol_usuario(rolu_id),
-	CONSTRAINT fk_usuario_tipo_documento FOREIGN KEY (usua_tipo_documento_id) REFERENCES tb_tipo_documento(tido_id),
-	CONSTRAINT chk_usuario_documento CHECK (usua_documento ~ '^\d{8,20}$')
 );
 
 -- Tabla recursos_textuales_codigos
