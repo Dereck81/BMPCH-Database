@@ -163,7 +163,6 @@ CREATE TABLE IF NOT EXISTS tb_usuario (
 	usua_tipo_documento_id SMALLINT NOT NULL,
 	usua_documento VARCHAR(20) UNIQUE NOT NULL,
 	usua_psk VARCHAR(255) NOT NULL,
-	CONSTRAINT fk_usuario_cliente FOREIGN KEY (usua_cliente_id) REFERENCES tb_cliente(clie_id),
 	CONSTRAINT fk_usuario_rol_usuario FOREIGN KEY (usua_rol_usuario_id) REFERENCES tb_rol_usuario(rolu_id),
 	CONSTRAINT fk_usuario_tipo_documento FOREIGN KEY (usua_tipo_documento_id) REFERENCES tb_tipo_documento(tido_id),
 	CONSTRAINT chk_usuario_documento CHECK (usua_documento ~ '^\d{8,20}$')
@@ -182,6 +181,7 @@ CREATE TABLE IF NOT EXISTS tb_cliente (
 	clie_correo VARCHAR(255) UNIQUE NOT NULL,
 	clie_carnet_id BIGINT UNIQUE NOT NULL,
 	clie_nivel_educativo_id SMALLINT NOT NULL,
+    CONSTRAINT fk_cliente_usuario FOREIGN KEY (clie_usuario_id) REFERENCES tb_usuario(usua_id),
 	CONSTRAINT fk_cliente_genero FOREIGN KEY (clie_genero_id) REFERENCES tb_genero(gene_id),
 	CONSTRAINT fk_cliente_direccion FOREIGN KEY (clie_direccion_id) REFERENCES tb_direccion_cliente(dicl_id),
 	CONSTRAINT fk_cliente_carnet FOREIGN KEY (clie_carnet_id) REFERENCES tb_carnet(carn_id),
