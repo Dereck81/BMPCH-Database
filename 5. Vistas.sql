@@ -1,4 +1,4 @@
-\c bmpch;
+\c bd_Biblioteca;
 
 -- Creación de vistas
 

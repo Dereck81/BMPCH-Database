@@ -1,4 +1,4 @@
-\c bmpch;
+\c bd_Biblioteca;
 
 /*
  * PROCEDURE: sp_realizar_prestamos
@@ -28,7 +28,7 @@ CREATE OR REPLACE PROCEDURE sp_realizar_prestamos (
     p_tipo_prestamo_id SMALLINT,
     p_fec_programada DATE
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
 
     BEGIN
@@ -44,7 +44,6 @@ BEGIN
 
     EXCEPTION
         WHEN OTHERS THEN
-            ROLLBACK;
             RAISE NOTICE 'Se produjo un error al realizar el prestamo: %', SQLERRM;
             RAISE;
 
@@ -78,7 +77,7 @@ CREATE OR REPLACE PROCEDURE sp_registrar_localizacion (
     p_distrito VARCHAR(255),
     OUT p_id_distrito BIGINT
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
     v_id_pais_ SMALLINT;
     v_id_region_ BIGINT;
@@ -87,6 +86,8 @@ DECLARE
 BEGIN
 
     BEGIN
+
+        START TRANSACTION;
 
         v_id_pais_ := (SELECT P.pais_id FROM tb_pais AS P WHERE P.pais_nombre = p_pais);
 
@@ -121,6 +122,7 @@ BEGIN
             p_id_distrito := v_id_distrito_;
         END IF;
 
+        COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
@@ -160,7 +162,7 @@ CREATE OR REPLACE PROCEDURE sp_registrar_direccion (
     p_direccion VARCHAR(255),
     OUT p_id_direccion BIGINT
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
     v_id_distrito_ BIGINT;
     v_id_direccion_ BIGINT;
@@ -168,10 +170,12 @@ BEGIN
 
     BEGIN
 
+        START TRANSACTION;
+
         CALL sp_registrar_localizacion(p_pais, p_region, p_provincia, p_distrito, v_id_distrito_);
 
         IF v_id_distrito_ IS NULL THEN
-            RAISE EXCEPTION 'Id de';
+            RAISE EXCEPTION 'ID de distrito null';
         END IF;
 
         v_id_direccion_ := (SELECT DC.dicl_id FROM tb_direccion_cliente AS DC
@@ -184,6 +188,7 @@ BEGIN
             p_id_direccion := v_id_direccion_;
         END IF;
 
+        COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
@@ -227,7 +232,7 @@ CREATE OR REPLACE PROCEDURE sp_modificar_direccion (
     p_distrito VARCHAR(255),
     p_direccion VARCHAR(255)
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
     v_id_direccion BIGINT;
     v_id_distrito BIGINT;
@@ -236,9 +241,11 @@ BEGIN
 
     BEGIN
 
+        START TRANSACTION;
+
         v_id_direccion := (
             SELECT DC.dicl_id FROM tb_usuario AS U
-                                       INNER JOIN tb_cliente AS CL ON U.usua_cliente_id = CL.clie_id
+                                       INNER JOIN tb_cliente AS CL ON U.usua_id = CL.clie_usuario_id
                                        INNER JOIN tb_direccion_cliente AS DC ON DC.dicl_id = CL.clie_direccion_id
             WHERE U.usua_id = p_id_usuario
         );
@@ -251,7 +258,7 @@ BEGIN
             CALL sp_registrar_direccion(p_pais, p_region, p_provincia, p_distrito, p_direccion, v_id_direccion);
 
             UPDATE tb_cliente SET clie_direccion_id = v_id_direccion
-            FROM tb_usuario WHERE tb_cliente.clie_id = tb_usuario.usua_cliente_id
+            FROM tb_usuario WHERE tb_cliente.clie_usuario_id = tb_usuario.usua_id
             AND tb_usuario.usua_id = p_id_usuario;
 
             RETURN;
@@ -266,8 +273,10 @@ BEGIN
         UPDATE tb_direccion_cliente SET dicl_distrito_id = v_id_distrito, dicl_direccion = p_direccion
         WHERE dicl_id = v_id_direccion;
 
+        COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
+            ROLLBACK;
             RAISE NOTICE 'Falló al modificar la dirección del cliente: %s', SQLERRM;
             RAISE;
 
@@ -323,24 +332,23 @@ CREATE OR REPLACE PROCEDURE sp_registrar_clientes (
     p_telefono CHAR(9),
     p_correo VARCHAR(255),
     p_nivel_educativo_id SMALLINT,
+    p_psk VARCHAR(255),
     p_pais VARCHAR(255),
     p_region VARCHAR(255),
     p_provincia VARCHAR(255),
     p_distrito VARCHAR(255),
     p_direccion VARCHAR(255)
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
     v_id_carnet BIGINT;
     v_id_direccion BIGINT;
-    v_id_cliente BIGINT;
+    v_id_usuario BIGINT;
 BEGIN
 
     BEGIN
 
-        INSERT INTO tb_carnet(carn_tipo_estado_id, carn_codigo, carn_fec_emision, carn_fec_vencimiento)
-        VALUES (1, 'nosequeponerleaqui', DEFAULT, DEFAULT)
-        RETURNING carn_id INTO v_id_carnet;
+        START TRANSACTION;
 
         CALL sp_registrar_direccion(p_pais, p_region, p_provincia, p_distrito, p_direccion, v_id_direccion);
 
@@ -348,20 +356,26 @@ BEGIN
             RAISE EXCEPTION 'No se logró registrar la direccion: %s', SQLERRM;
         END IF;
 
-        INSERT INTO tb_cliente(clie_nombre, clie_apellido_paterno, clie_apellido_materno,
+        INSERT INTO tb_usuario(usua_rol_usuario_id, usua_documento, usua_tipo_documento_id, usua_psk)
+        VALUES (2, p_documento,
+                p_tipo_documento_id, p_psk)
+        RETURNING usua_id INTO v_id_usuario;
+
+        INSERT INTO tb_carnet(carn_tipo_estado_id, carn_codigo, carn_fec_emision, carn_fec_vencimiento)
+        VALUES (1, CONCAT('BMPCH','-',v_id_usuario), DEFAULT, DEFAULT)
+        RETURNING carn_id INTO v_id_carnet;
+
+        INSERT INTO tb_cliente(clie_nombre, clie_usuario_id, clie_apellido_paterno, clie_apellido_materno,
                                clie_genero_id, clie_direccion_id, clie_telefono, clie_correo,
                                clie_carnet_id, clie_nivel_educativo_id)
-        VALUES (p_nombre, p_apellido_paterno, p_apellido_materno,
+        VALUES (p_nombre, v_id_usuario,p_apellido_paterno, p_apellido_materno,
                 p_genero_id, v_id_direccion, p_telefono,
-                p_correo, v_id_carnet, p_nivel_educativo_id)
-        RETURNING clie_id INTO v_id_cliente;
+                p_correo, v_id_carnet, p_nivel_educativo_id);
 
-        INSERT INTO tb_usuario(usua_cliente_id, usua_rol_usuario_id, usua_documento, usua_tipo_documento_id, usua_psk)
-        VALUES (v_id_cliente, 2, p_documento,
-                p_tipo_documento_id, p_documento);
-
+        COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
+            ROLLBACK;
             RAISE NOTICE 'Falló al registrar a un cliente: %s', SQLERRM;
             RAISE;
 
@@ -394,7 +408,7 @@ CREATE OR REPLACE PROCEDURE sp_registrar_autor(
     p_apellido_paterno VARCHAR(255),
     p_apellido_materno VARCHAR(255)
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
 
     BEGIN
@@ -450,7 +464,7 @@ CREATE OR REPLACE PROCEDURE sp_registrar_recurso_textual (
     p_editorial_id BIGINT,
     p_id_autor BIGINT
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
     v_id_recurso_textual BIGINT;
 BEGIN
@@ -504,7 +518,7 @@ CREATE OR REPLACE PROCEDURE sp_registrar_codigo_recurso_textual(
     p_id_recurso_textual BIGINT,
     p_codigo VARCHAR(255)
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
    BEGIN
 
@@ -541,7 +555,7 @@ $$;
 CREATE OR REPLACE PROCEDURE sp_renovar_carnet(
     p_documento VARCHAR(20)
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
     v_id_carnet BIGINT;
 BEGIN
@@ -549,8 +563,8 @@ BEGIN
     BEGIN
 
         v_id_carnet := (SELECT C.clie_carnet_id FROM tb_usuario AS U
-                        INNER JOIN tb_cliente AS C ON U.usua_cliente_id = C.clie_id
-                        GROUP BY U.usua_documento = p_documento);
+                        INNER JOIN tb_cliente AS C ON U.usua_id = C.clie_usuario_id
+                        WHERE U.usua_documento = p_documento);
 
         IF v_id_carnet IS NULL THEN
             RAISE EXCEPTION 'No se pudo obtener el id del carnet: %s', SQLERRM;

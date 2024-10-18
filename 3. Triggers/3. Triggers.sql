@@ -1,4 +1,4 @@
-\c bmpch;
+\c bd_Biblioteca;
 
 /*
  * TRIGGER: tr_verificar_requisitos_prestamos

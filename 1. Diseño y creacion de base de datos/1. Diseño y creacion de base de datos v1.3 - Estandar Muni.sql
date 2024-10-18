@@ -4,14 +4,9 @@
 
 CREATE USER bmpch_user WITH PASSWORD 'Jd99E5;)ZJ$5+%(+';
 
-CREATE DATABASE bmpch OWNER bmpch_user;
+CREATE DATABASE bd_Biblioteca OWNER bmpch_user;
 
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to bmpch_user;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to bmpch_user;
-GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to bmpch_user;
-GRANT ALL PRIVILEGES ON SCHEMA public TO bmpch_user;
-
-\c bmpch;
+\c bd_Biblioteca;
 
 -- Tabla tipos_estados
 CREATE TABLE IF NOT EXISTS tb_tipo_estado (
@@ -247,3 +242,8 @@ CREATE TABLE IF NOT EXISTS tb_categoria_recurso_textual (
 	CONSTRAINT fk_categoria_recurso_textual_recurso FOREIGN KEY (care_recurso_textual_id) REFERENCES tb_recurso_textual(rete_id),
 	CONSTRAINT fk_categoria_recurso_textual_categoria FOREIGN KEY (care_categoria_id) REFERENCES tb_categoria(cate_id)
 );
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to bmpch_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to bmpch_user;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to bmpch_user;
+GRANT ALL PRIVILEGES ON SCHEMA public TO bmpch_user;

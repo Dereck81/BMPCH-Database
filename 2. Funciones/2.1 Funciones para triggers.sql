@@ -1,4 +1,4 @@
-\c bmpch;
+\c bd_Biblioteca;
 
 -- Creación de funciones para triggers.
 
@@ -26,7 +26,7 @@
 CREATE OR REPLACE FUNCTION fn_verificar_requisitos_prestamos()
 RETURNS TRIGGER AS $$
 DECLARE
-f_estado_carnet BOOLEAN;
+    f_estado_carnet BOOLEAN;
     f_recurso_textual_disponible BOOLEAN;
     f_recurso_textual_id BIGINT;
     f_recurso_textual_stock_disp INT;
@@ -34,7 +34,7 @@ BEGIN
 
     f_estado_carnet := (
         SELECT TIE.ties_activo FROM tb_usuario AS USU
-               INNER JOIN tb_cliente AS CLI ON USU.usua_cliente_id = CLI.clie_id
+               INNER JOIN tb_cliente AS CLI ON USU.usua_id = CLI.clie_usuario_id
                INNER JOIN tb_carnet AS CAR ON CAR.carn_id = CLI.clie_carnet_id
                INNER JOIN tb_tipo_estado AS TIE ON TIE.ties_id = CAR.carn_tipo_estado_id
         WHERE USU.usua_id = NEW.pres_usuario_id
@@ -42,16 +42,16 @@ BEGIN
 
     IF NOT f_estado_carnet THEN
         RAISE EXCEPTION 'El estado del carnet del usuario (%) no está activo', NEW.pres_usuario_id;
-END IF;
+    END IF;
 
     f_recurso_textual_disponible := (
         SELECT reco_disponible FROM tb_recurso_textual_codigo
-        WHERE reco_recurso_textual_id = NEW.pres_recurso_textual_codigo_id
+        WHERE reco_id = NEW.pres_recurso_textual_codigo_id
     );
 
     IF NOT f_recurso_textual_disponible THEN
         RAISE EXCEPTION 'El recurso textual no está disponible.';
-END IF;
+    END IF;
 
     f_recurso_textual_id := (
         SELECT reco_recurso_textual_id FROM tb_recurso_textual_codigo
@@ -65,7 +65,9 @@ END IF;
 
     IF f_recurso_textual_stock_disp < 2 THEN
         RAISE EXCEPTION 'No se puede realizar la operación, debe de quedar al menos un ejemplar en la biblioteca';
-END IF;
+    END IF;
+
+    RETURN NEW;
 
 END;
 $$ LANGUAGE plpgsql;
