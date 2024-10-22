@@ -16,6 +16,8 @@ scripts=(\
 
 # Creando bd_biblioteca
 
+sh install_pg_cron.sh
+
 psql -U postgres -h localhost -f "1. Diseño y creacion de base de datos/1. Diseño y creacion de base de datos.sql";
 
 for script in "${scripts[@]}"; do
