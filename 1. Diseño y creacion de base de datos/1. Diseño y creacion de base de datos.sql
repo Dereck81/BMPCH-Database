@@ -1,12 +1,11 @@
 /*
  Base de datos hecha en PostgreSQL
 */
-
 CREATE USER bmpch_user WITH PASSWORD 'Jd99E5;)ZJ$5+%(+';
 
-CREATE DATABASE bd_Biblioteca OWNER bmpch_user;
+CREATE DATABASE bd_biblioteca OWNER bmpch_user;
 
-\c bd_Biblioteca;
+\c bd_biblioteca;
 
 -- Tabla tipos_estados
 CREATE TABLE IF NOT EXISTS tb_tipo_estado (
@@ -158,6 +157,7 @@ CREATE TABLE IF NOT EXISTS tb_usuario (
 	usua_tipo_documento_id SMALLINT NOT NULL,
 	usua_documento VARCHAR(20) UNIQUE NOT NULL,
 	usua_psk VARCHAR(255) NOT NULL,
+    usua_activo BOOLEAN NOT NULL DEFAULT TRUE,
 	CONSTRAINT fk_usuario_rol_usuario FOREIGN KEY (usua_rol_usuario_id) REFERENCES tb_rol_usuario(rolu_id),
 	CONSTRAINT fk_usuario_tipo_documento FOREIGN KEY (usua_tipo_documento_id) REFERENCES tb_tipo_documento(tido_id),
 	CONSTRAINT chk_usuario_documento CHECK (usua_documento ~ '^\d{8,20}$')

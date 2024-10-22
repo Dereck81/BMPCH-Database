@@ -3921,13 +3921,28 @@
 											"top": 488,
 											"width": 310,
 											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "AAAAAAGStVyicyP4d1Y=",
+											"_parent": {
+												"$ref": "AAAAAAGSDc1Dc3C9ClM="
+											},
+											"model": {
+												"$ref": "AAAAAAGStVyiXCP11Is="
+											},
+											"font": "Arial;13;0",
+											"left": 2133,
+											"top": 503,
+											"width": 310,
+											"height": 13
 										}
 									],
 									"font": "Arial;13;0",
 									"left": 2128,
 									"top": 423,
 									"width": 320,
-									"height": 83
+									"height": 98
 								}
 							],
 							"font": "Arial;13;0",
@@ -6815,6 +6830,16 @@
 							"name": "psk",
 							"type": "VARCHAR",
 							"length": "255"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "AAAAAAGStVyiXCP11Is=",
+							"_parent": {
+								"$ref": "AAAAAAGSDc1DcXC5CX8="
+							},
+							"name": "activo",
+							"type": "BOOLEAN",
+							"length": 0
 						}
 					]
 				},

@@ -1,4 +1,4 @@
-\c bd_Biblioteca;
+\c bd_biblioteca;
 
 /*
  * PROCEDURE: sp_realizar_prestamos
@@ -87,8 +87,6 @@ BEGIN
 
     BEGIN
 
-        START TRANSACTION;
-
         v_id_pais_ := (SELECT P.pais_id FROM tb_pais AS P WHERE P.pais_nombre = p_pais);
 
         IF v_id_pais_ IS NULL THEN
@@ -113,7 +111,7 @@ BEGIN
         END IF;
 
         v_id_distrito_ := (SELECT D.dist_id FROM tb_distrito AS D
-                           WHERE D.dist_id = v_id_provincia_ AND D.dist_nombre = p_distrito);
+                           WHERE D.dist_provincia_id = v_id_provincia_ AND D.dist_nombre = p_distrito);
 
         IF v_id_distrito_ IS NULL THEN
             INSERT INTO tb_distrito(dist_provincia_id, dist_nombre) VALUES (v_id_provincia_, p_distrito)
@@ -122,10 +120,8 @@ BEGIN
             p_id_distrito := v_id_distrito_;
         END IF;
 
-        COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
-            ROLLBACK;
             RAISE NOTICE 'Falló al registrar la direccion: %s', SQLERRM;
             RAISE;
     END;
@@ -170,8 +166,6 @@ BEGIN
 
     BEGIN
 
-        START TRANSACTION;
-
         CALL sp_registrar_localizacion(p_pais, p_region, p_provincia, p_distrito, v_id_distrito_);
 
         IF v_id_distrito_ IS NULL THEN
@@ -188,10 +182,8 @@ BEGIN
             p_id_direccion := v_id_direccion_;
         END IF;
 
-        COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
-            ROLLBACK;
             RAISE NOTICE 'Falló al registrar la direccion: %s', SQLERRM;
             RAISE;
     END;
@@ -236,12 +228,11 @@ LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
     v_id_direccion BIGINT;
     v_id_distrito BIGINT;
+    v_id_direccion_nueva BIGINT;
     v_cant_direccion_cliente BIGINT;
 BEGIN
 
     BEGIN
-
-        START TRANSACTION;
 
         v_id_direccion := (
             SELECT DC.dicl_id FROM tb_usuario AS U
@@ -254,29 +245,49 @@ BEGIN
             SELECT COUNT(clie_direccion_id) FROM tb_cliente WHERE clie_direccion_id = v_id_direccion
         );
 
-        IF v_cant_direccion_cliente >= 2 THEN
-            CALL sp_registrar_direccion(p_pais, p_region, p_provincia, p_distrito, p_direccion, v_id_direccion);
+        v_id_distrito := (SELECT dist_id FROM tb_distrito WHERE dist_nombre = p_distrito);
 
-            UPDATE tb_cliente SET clie_direccion_id = v_id_direccion
+        SELECT dicl_id, dicl_distrito_id INTO v_id_direccion_nueva, v_id_distrito FROM tb_direccion_cliente
+        WHERE dicl_distrito_id = v_id_distrito AND dicl_direccion = p_direccion;
+
+        IF v_id_direccion_nueva = v_id_direccion THEN
+            RETURN;
+        END IF;
+
+        IF v_cant_direccion_cliente >= 2 THEN
+
+            IF v_id_direccion_nueva IS NULL THEN
+                CALL sp_registrar_direccion(p_pais, p_region, p_provincia, p_distrito, p_direccion, v_id_direccion_nueva);
+            END IF;
+
+            UPDATE tb_cliente SET clie_direccion_id = v_id_direccion_nueva
             FROM tb_usuario WHERE tb_cliente.clie_usuario_id = tb_usuario.usua_id
-            AND tb_usuario.usua_id = p_id_usuario;
+                              AND tb_usuario.usua_id = p_id_usuario;
 
             RETURN;
         END IF;
 
-        CALL sp_registrar_localizacion(p_pais, p_region, p_provincia, p_distrito, v_id_distrito);
+        IF v_id_direccion_nueva IS NULL THEN
+            CALL sp_registrar_localizacion(p_pais, p_region, p_provincia, p_distrito, v_id_distrito);
 
-        IF v_id_distrito IS NULL THEN
-            RAISE EXCEPTION 'ID de distrito nulo.';
+            IF v_id_distrito IS NULL THEN
+                RAISE EXCEPTION 'ID de distrito nulo.';
+            END IF;
+
+            UPDATE tb_direccion_cliente SET dicl_distrito_id = v_id_distrito, dicl_direccion = p_direccion
+            WHERE dicl_id = v_id_direccion;
+
+        ELSE
+            UPDATE tb_cliente SET clie_direccion_id = v_id_direccion_nueva
+            FROM tb_usuario WHERE tb_cliente.clie_usuario_id = tb_usuario.usua_id
+                              AND tb_usuario.usua_id = p_id_usuario;
+
+            DELETE FROM tb_direccion_cliente WHERE dicl_id = v_id_direccion;
+
         END IF;
 
-        UPDATE tb_direccion_cliente SET dicl_distrito_id = v_id_distrito, dicl_direccion = p_direccion
-        WHERE dicl_id = v_id_direccion;
-
-        COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
-            ROLLBACK;
             RAISE NOTICE 'Falló al modificar la dirección del cliente: %s', SQLERRM;
             RAISE;
 
@@ -348,17 +359,15 @@ BEGIN
 
     BEGIN
 
-        START TRANSACTION;
-
         CALL sp_registrar_direccion(p_pais, p_region, p_provincia, p_distrito, p_direccion, v_id_direccion);
 
         IF v_id_direccion IS NULL THEN
             RAISE EXCEPTION 'No se logró registrar la direccion: %s', SQLERRM;
         END IF;
 
-        INSERT INTO tb_usuario(usua_rol_usuario_id, usua_documento, usua_tipo_documento_id, usua_psk)
+        INSERT INTO tb_usuario(usua_rol_usuario_id, usua_documento, usua_tipo_documento_id, usua_psk, usua_activo)
         VALUES (2, p_documento,
-                p_tipo_documento_id, p_psk)
+                p_tipo_documento_id, p_psk, DEFAULT)
         RETURNING usua_id INTO v_id_usuario;
 
         INSERT INTO tb_carnet(carn_tipo_estado_id, carn_codigo, carn_fec_emision, carn_fec_vencimiento)
@@ -372,10 +381,8 @@ BEGIN
                 p_genero_id, v_id_direccion, p_telefono,
                 p_correo, v_id_carnet, p_nivel_educativo_id);
 
-        COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
-            ROLLBACK;
             RAISE NOTICE 'Falló al registrar a un cliente: %s', SQLERRM;
             RAISE;
 
