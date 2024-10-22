@@ -1,4 +1,4 @@
-\c bd_biblioteca;
+\c db_biblioteca;
 
 -- Crear el rol para el cliente
 CREATE ROLE cliente NOLOGIN;

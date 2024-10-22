@@ -1,4 +1,4 @@
-\c bd_biblioteca;
+\c db_biblioteca;
 
 /*
  * PROCEDURE: sp_realizar_prestamos

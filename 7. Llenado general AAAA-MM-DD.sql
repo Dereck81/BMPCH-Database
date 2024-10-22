@@ -1,10 +1,10 @@
 -- Conectarse a la base de datos
-\c bd_biblioteca;
+\c db_biblioteca;
 
 -- Insertar tipos de estados
 INSERT INTO tb_tipo_estado (ties_tipo, ties_activo) VALUES
                                                         ('Activo', true),
-                                                        ('Inactivo', false),
+                                                        ('Vencido', false),
                                                         ('Suspendido', false);
 
 -- Insertar tipos de textos

@@ -3,9 +3,9 @@
 */
 CREATE USER bmpch_user WITH PASSWORD 'Jd99E5;)ZJ$5+%(+';
 
-CREATE DATABASE bd_biblioteca OWNER bmpch_user;
+CREATE DATABASE db_biblioteca OWNER bmpch_user;
 
-\c bd_biblioteca;
+\c db_biblioteca;
 
 -- Tabla tipos_estados
 CREATE TABLE IF NOT EXISTS tb_tipo_estado (

@@ -1,4 +1,4 @@
-\c bd_biblioteca;
+\c db_biblioteca;
 
 /*
  * TRIGGER: tr_verificar_requisitos_prestamos
