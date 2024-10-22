@@ -114,6 +114,7 @@ CALL sp_registrar_codigo_recurso_textual(8::BIGINT, 'LIB008-2');
 CALL sp_registrar_codigo_recurso_textual(9::BIGINT, 'LIB009-2');
 CALL sp_registrar_codigo_recurso_textual(10::BIGINT, 'LIB010-2');
 
+
 -- Realizar préstamos
 CALL sp_realizar_prestamos(1::BIGINT, 1::BIGINT, 2::SMALLINT, CURRENT_DATE::DATE);
 CALL sp_realizar_prestamos(2::BIGINT, 2::BIGINT, 1::SMALLINT, CURRENT_DATE::DATE);
