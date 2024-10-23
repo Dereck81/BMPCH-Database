@@ -90,16 +90,15 @@ CALL sp_registrar_clientes('Ricardo'::VARCHAR, 'Salazar'::VARCHAR, 'Hernández':
 CALL sp_registrar_clientes('Esteban'::VARCHAR, 'Cruz'::VARCHAR, 'Valenzuela'::VARCHAR, 1::SMALLINT, '55667788'::VARCHAR, 1::SMALLINT, '123450089'::VARCHAR, 'esteban.cruz@example.com'::VARCHAR, 3::SMALLINT, 'passwordEsteban102'::VARCHAR, 'Perú'::VARCHAR, 'Lima'::VARCHAR, 'Lima'::VARCHAR, 'Miraflores'::VARCHAR, 'Av. José Larco 700'::VARCHAR);
 
 -- Registrar recursos textuales
-CALL sp_registrar_recurso_textual('El Alquimista'::VARCHAR, '1988-05-01'::DATE, 208::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB005'::VARCHAR, 2::BIGINT, 1::BIGINT, 1::BIGINT);
-CALL sp_registrar_recurso_textual('1984'::VARCHAR, '1949-06-08'::DATE, 328::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB006'::VARCHAR, 2::BIGINT, 2::BIGINT, 1::BIGINT);
-CALL sp_registrar_recurso_textual('Cien años de soledad'::VARCHAR, '1967-05-30'::DATE, 471::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB007'::VARCHAR, 1::BIGINT, 1::BIGINT, 1::BIGINT);
-CALL sp_registrar_recurso_textual('Crónica de una muerte anunciada'::VARCHAR, '1981-01-01'::DATE, 120::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB008'::VARCHAR, 1::BIGINT, 2::BIGINT, 2::BIGINT);
-CALL sp_registrar_recurso_textual('Los ojos del perro siberiano'::VARCHAR, '1995-05-01'::DATE, 134::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB009'::VARCHAR, 2::BIGINT, 3::BIGINT, 3::BIGINT);
-CALL sp_registrar_recurso_textual('El túnel'::VARCHAR, '1948-01-01'::DATE, 280::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB010'::VARCHAR, 2::BIGINT, 4::BIGINT, 4::BIGINT);
-CALL sp_registrar_recurso_textual('El amor en los tiempos del cólera'::VARCHAR, '1985-03-25'::DATE, 368::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB011'::VARCHAR, 2::BIGINT, 1::BIGINT, 1::BIGINT);
-CALL sp_registrar_recurso_textual('La sombra del viento'::VARCHAR, '2001-04-17'::DATE, 576::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB012'::VARCHAR, 2::BIGINT, 2::BIGINT, 2::BIGINT);
-CALL sp_registrar_recurso_textual('Siete años en el Tíbet'::VARCHAR, '1997-10-01'::DATE, 256::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB013'::VARCHAR, 2::BIGINT, 3::BIGINT, 3::BIGINT);
-CALL sp_registrar_recurso_textual('Moby Dick'::VARCHAR, '1851-10-18'::DATE, 635::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB014'::VARCHAR, 2::BIGINT, 1::BIGINT, 1::BIGINT);
+CALL sp_registrar_recurso_textual('1984'::VARCHAR, '1949-06-08'::DATE, 328::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB006'::VARCHAR, 2::BIGINT, 2::BIGINT, 1::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('Cien años de soledad'::VARCHAR, '1967-05-30'::DATE, 471::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB007'::VARCHAR, 1::BIGINT, 1::BIGINT, 1::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('Crónica de una muerte anunciada'::VARCHAR, '1981-01-01'::DATE, 120::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB008'::VARCHAR, 1::BIGINT, 2::BIGINT, 2::BIGINT, ARRAY[1, 2]);
+CALL sp_registrar_recurso_textual('Los ojos del perro siberiano'::VARCHAR, '1995-05-01'::DATE, 134::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB009'::VARCHAR, 2::BIGINT, 3::BIGINT, 3::BIGINT, ARRAY[2]);
+CALL sp_registrar_recurso_textual('El túnel'::VARCHAR, '1948-01-01'::DATE, 280::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB010'::VARCHAR, 2::BIGINT, 4::BIGINT, 4::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('El amor en los tiempos del cólera'::VARCHAR, '1985-03-25'::DATE, 368::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB011'::VARCHAR, 2::BIGINT, 1::BIGINT, 1::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('La sombra del viento'::VARCHAR, '2001-04-17'::DATE, 576::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB012'::VARCHAR, 2::BIGINT, 2::BIGINT, 2::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('Siete años en el Tíbet'::VARCHAR, '1997-10-01'::DATE, 256::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB013'::VARCHAR, 2::BIGINT, 3::BIGINT, 3::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('Moby Dick'::VARCHAR, '1851-10-18'::DATE, 635::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB014'::VARCHAR, 2::BIGINT, 1::BIGINT, 1::BIGINT, ARRAY[3]);
 
 -- Registrar códigos adicionales para recursos textuales
 CALL sp_registrar_codigo_recurso_textual(1::BIGINT, 'LIB001-2');
@@ -112,8 +111,6 @@ CALL sp_registrar_codigo_recurso_textual(6::BIGINT, 'LIB006-2');
 CALL sp_registrar_codigo_recurso_textual(7::BIGINT, 'LIB007-2');
 CALL sp_registrar_codigo_recurso_textual(8::BIGINT, 'LIB008-2');
 CALL sp_registrar_codigo_recurso_textual(9::BIGINT, 'LIB009-2');
-CALL sp_registrar_codigo_recurso_textual(10::BIGINT, 'LIB010-2');
-
 
 -- Realizar préstamos
 CALL sp_realizar_prestamos(1::BIGINT, 1::BIGINT, 2::SMALLINT, CURRENT_DATE::DATE);

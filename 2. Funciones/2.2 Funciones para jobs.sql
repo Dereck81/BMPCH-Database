@@ -28,6 +28,7 @@ BEGIN
         INNER JOIN tb_usuario AS U ON U.usua_id = CL.clie_usuario_id
     WHERE CL.clie_carnet_id = CR.carn_id
       AND U.usua_rol_usuario_id = 1
-      AND CR.carn_fec_vencimiento = CURRENT_DATE - INTERVAL '1 day';
+      AND (CR.carn_tipo_estado_id = id_tipo_estado_vencido
+      OR CR.carn_fec_vencimiento = CURRENT_DATE - INTERVAL '1 day');
 END
 $$ LANGUAGE plpgsql;

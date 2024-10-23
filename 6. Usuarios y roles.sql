@@ -1,5 +1,14 @@
 \c db_biblioteca;
 
+-- Crear usuario owner para a db_biblioteca;
+CREATE USER bmpch_user WITH PASSWORD 'Jd99E5;)ZJ$5+%(+';
+ALTER DATABASE db_biblioteca OWNER TO bmpch_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to bmpch_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to bmpch_user;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to bmpch_user;
+GRANT ALL PRIVILEGES ON SCHEMA public TO bmpch_user;
+
+
 -- Crear el rol para el cliente
 CREATE ROLE cliente NOLOGIN;
 

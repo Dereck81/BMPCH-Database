@@ -19,3 +19,24 @@ BEFORE INSERT ON tb_prestamo
 FOR EACH ROW
 EXECUTE FUNCTION fn_verificar_requisitos_prestamos();
 
+/*
+ * TRIGGER: tr_verificar_carnet_cambio_estado
+ *
+ * DESCRIPCIÓN:
+ * Este trigger se activa antes de actualizar un registro en la tabla 'tb_carnet'.
+ * Llama a la función 'fn_verificar_carnet_cambio_estado' para verificar si se cumplen
+ * los requisitos necesarios para cambiar el estado del carnet.
+ *
+ * CONTEXTO:
+ * Este trigger garantiza que el cambio de estado del carnet solo se realice si la
+ * fecha de vencimiento es válida, asegurando que no se activen carnets vencidos
+ * ni se suspendan carnets activos.
+ *
+ * NOTAS:
+ *   - Este trigger ayuda a mantener la integridad de los datos relacionados con los
+ *     carnets y su estado en la base de datos.
+ */
+CREATE TRIGGER tr_verficar_carnet_cambio_estado
+BEFORE UPDATE ON tb_carnet
+FOR EACH ROW
+EXECUTE FUNCTION fn_verificar_carnet_cambio_estado();

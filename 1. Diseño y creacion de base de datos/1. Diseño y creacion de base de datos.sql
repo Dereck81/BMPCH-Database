@@ -1,9 +1,8 @@
 /*
  Base de datos hecha en PostgreSQL
 */
-CREATE USER bmpch_user WITH PASSWORD 'Jd99E5;)ZJ$5+%(+';
 
-CREATE DATABASE db_biblioteca OWNER bmpch_user;
+CREATE DATABASE db_biblioteca;
 
 \c db_biblioteca;
 
@@ -115,15 +114,6 @@ CREATE TABLE IF NOT EXISTS tb_estado_prestamo (
 	espr_nombre VARCHAR(255) UNIQUE NOT NULL
 );
 
--- Tabla acciones
-CREATE TABLE IF NOT EXISTS tb_accion (
-	acci_id BIGSERIAL PRIMARY KEY NOT NULL,
-	acci_nombre VARCHAR(255) UNIQUE NOT NULL,
-	acci_prestamo_id BIGINT,
-	acci_carnet_id BIGINT,
-	acci_recurso_textual_id BIGINT
-);
-
 -- Tabla carnets
 CREATE TABLE IF NOT EXISTS tb_carnet (
 	carn_id BIGSERIAL PRIMARY KEY NOT NULL,
@@ -141,10 +131,11 @@ CREATE TABLE IF NOT EXISTS tb_recurso_textual (
 	rete_tipo_texto_id BIGINT NOT NULL,
 	rete_editorial_id BIGINT NOT NULL,
 	rete_titulo VARCHAR(255) NOT NULL,
-	rete_fec_publicacion DATE NOT NULL,
+	rete_fec_publicacion DATE NOT NULL ,
 	rete_num_paginas SMALLINT NOT NULL,
 	rete_edicion SMALLINT NOT NULL DEFAULT 0,
 	rete_volumen SMALLINT NOT NULL DEFAULT 0,
+    CONSTRAINT chk_recurso_textual_fec_publicacion CHECK (rete_fec_publicacion <= CURRENT_DATE),
 	CONSTRAINT fk_recurso_textual_tipo_texto FOREIGN KEY (rete_tipo_texto_id) REFERENCES tb_tipo_texto(tite_id),
 	CONSTRAINT fk_recurso_textual_editorial FOREIGN KEY (rete_editorial_id) REFERENCES tb_editorial(edit_id),
 	CONSTRAINT chk_recurso_textual_numero_paginas CHECK (rete_num_paginas > 0)
@@ -224,7 +215,7 @@ CREATE TABLE IF NOT EXISTS tb_recurso_textual_autor (
 -- Tabla registro_acciones_usuarios
 CREATE TABLE IF NOT EXISTS tb_registro_accion_usuario (
 	reau_usuario_id BIGINT NOT NULL,
-	reau_accion_id BIGINT NOT NULL,
+    reau_detalle VARCHAR NOT NULL,
 	reau_fec_hora TIMESTAMP NOT NULL DEFAULT NOW(),
 	reau_direccion_ip VARCHAR(255) NOT NULL,
 	CONSTRAINT fk_registro_accion_usuario_usuario FOREIGN KEY (reau_usuario_id) REFERENCES tb_usuario(usua_id),
@@ -242,8 +233,3 @@ CREATE TABLE IF NOT EXISTS tb_categoria_recurso_textual (
 	CONSTRAINT fk_categoria_recurso_textual_recurso FOREIGN KEY (care_recurso_textual_id) REFERENCES tb_recurso_textual(rete_id),
 	CONSTRAINT fk_categoria_recurso_textual_categoria FOREIGN KEY (care_categoria_id) REFERENCES tb_categoria(cate_id)
 );
-
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to bmpch_user;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to bmpch_user;
-GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to bmpch_user;
-GRANT ALL PRIVILEGES ON SCHEMA public TO bmpch_user;

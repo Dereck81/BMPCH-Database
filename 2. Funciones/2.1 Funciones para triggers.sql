@@ -72,4 +72,58 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+/*
+ * FUNCTION: fn_verificar_carnet_cambio_estado
+ *
+ * DESCRIPCIÓN:
+ * Verifica los requisitos necesarios para cambiar el estado de un carnet en la base de datos.
+ * Comprueba si el estado actual y el nuevo estado del carnet son válidos, teniendo en cuenta
+ * la fecha de vencimiento. Esta función se utiliza como parte de un trigger en la tabla 'tb_carnet'.
+ *
+ * RETORNA:
+ *   - Esta función no retorna un valor explícito, pero lanza excepciones si no se cumplen los requisitos.
+ *
+ * EXCEPCIONES:
+ *   - Si la fecha de vencimiento es menor a la fecha actual cuando se intenta activar el carnet,
+ *     se lanza una excepción.
+ *   - Si la fecha de vencimiento es mayor o igual a la fecha actual cuando se intenta suspender el carnet,
+ *     se lanza una excepción.
+ *
+ * NOTAS:
+ *   - Esta función está diseñada para ser utilizada en un contexto de trigger,
+ *     y se asume que el trigger llama a esta función antes de realizar la actualización
+ *     del estado del carnet.
+ */
+CREATE OR REPLACE FUNCTION fn_verificar_carnet_cambio_estado()
+    RETURNS TRIGGER AS $$
+DECLARE
+    f_estado_carnet_actual BOOLEAN;
+    f_estado_carnet_nuevo BOOLEAN;
+    f_mensaje VARCHAR;
+BEGIN
+
+    f_mensaje := 'Falló al cambiar el tipo de estado del carnet:';
+
+    SELECT TIE.ties_activo INTO f_estado_carnet_actual
+            FROM tb_carnet AS CRN INNER JOIN tb_tipo_estado AS TIE
+                ON CRN.carn_tipo_estado_id = TIE.ties_id
+            WHERE carn_id = NEW.carn_id;
+
+    f_estado_carnet_nuevo := (
+        SELECT ties_activo FROM tb_tipo_estado WHERE ties_id = NEW.carn_tipo_estado_id
+    );
+
+    CASE
+        WHEN NEW.carn_tipo_estado_id = 1 AND NEW.carn_fec_vencimiento <= (CURRENT_DATE - INTERVAL '1 DAY') THEN
+            RAISE EXCEPTION '%s La fecha de vencimiento es menor a la fecha actual.', f_mensaje;
+        WHEN NEW.carn_tipo_estado_id = 2 AND NEW.carn_fec_vencimiento >= CURRENT_DATE THEN
+            RAISE EXCEPTION '%s La fecha de vencimiento es mayor o igual a la fecha actual.', f_mensaje;
+        ELSE
+            NULL;
+    END CASE;
+
+    RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
 
