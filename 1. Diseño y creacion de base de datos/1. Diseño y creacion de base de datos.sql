@@ -4,7 +4,7 @@
 
 CREATE DATABASE db_biblioteca;
 
-\c db_biblioteca;
+\c db_Biblioteca;
 
 -- Tabla tipos_estados
 CREATE TABLE IF NOT EXISTS tb_tipo_estado (
@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS tb_tipo_texto (
 -- Tabla autores
 CREATE TABLE IF NOT EXISTS tb_autor (
 	auto_id BIGSERIAL PRIMARY KEY NOT NULL,
-	auto_seudonimo VARCHAR(255) NOT NULL,
 	auto_nombre VARCHAR(255) NOT NULL,
 	auto_apellido_paterno VARCHAR(255) NOT NULL,
 	auto_apellido_materno VARCHAR(255) NOT NULL
@@ -131,10 +130,12 @@ CREATE TABLE IF NOT EXISTS tb_recurso_textual (
 	rete_tipo_texto_id BIGINT NOT NULL,
 	rete_editorial_id BIGINT NOT NULL,
 	rete_titulo VARCHAR(255) NOT NULL,
-	rete_fec_publicacion DATE NOT NULL ,
+    rete_codigo_base VARCHAR(15) UNIQUE NOT NULL,
+	rete_fec_publicacion DATE NOT NULL,
 	rete_num_paginas SMALLINT NOT NULL,
 	rete_edicion SMALLINT NOT NULL DEFAULT 0,
 	rete_volumen SMALLINT NOT NULL DEFAULT 0,
+    rete_activo BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT chk_recurso_textual_fec_publicacion CHECK (rete_fec_publicacion <= CURRENT_DATE),
 	CONSTRAINT fk_recurso_textual_tipo_texto FOREIGN KEY (rete_tipo_texto_id) REFERENCES tb_tipo_texto(tite_id),
 	CONSTRAINT fk_recurso_textual_editorial FOREIGN KEY (rete_editorial_id) REFERENCES tb_editorial(edit_id),
@@ -179,10 +180,11 @@ CREATE TABLE IF NOT EXISTS tb_cliente (
 -- Tabla recursos_textuales_codigos
 CREATE TABLE IF NOT EXISTS tb_recurso_textual_codigo (
 	reco_id BIGSERIAL PRIMARY KEY NOT NULL,
-	reco_recurso_textual_id BIGINT NOT NULL,
-	reco_codigo VARCHAR(255) UNIQUE NOT NULL,
+    reco_rete_codigo_base VARCHAR(15) NOT NULL,
+	reco_codigo_ejemplar INT NOT NULL,
 	reco_disponible BOOLEAN NOT NULL,
-	CONSTRAINT fk_recurso_textual_codigo_recurso FOREIGN KEY (reco_recurso_textual_id) REFERENCES tb_recurso_textual(rete_id)
+	CONSTRAINT fk_recurso_textual_codigo_recurso FOREIGN KEY (reco_rete_codigo_base) REFERENCES tb_recurso_textual(rete_codigo_base) ON UPDATE CASCADE,
+    CONSTRAINT unq_recurso_textual_codigo_base_ejemplar UNIQUE(reco_rete_codigo_base, reco_codigo_ejemplar)
 );
 
 -- Tabla prestamos

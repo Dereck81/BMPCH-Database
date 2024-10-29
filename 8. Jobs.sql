@@ -17,13 +17,6 @@ SELECT cron.schedule(
     FROM cron.job_run_details
     WHERE end_time < now() - interval '7 days'$$);
 
-SELECT cron.schedule(
-               'job_limpiar_registro_acciones_usuarios',
-               schedule => '0 0 * * *',
-               command => $$DELETE
-    FROM tb_registro_accion_usuario
-    WHERE reau_fec_hora::DATE <= (CURRENT_DATE - interval '1 month')$$);
-
 
 UPDATE cron.job SET nodename = ''
 WHERE database = 'db_biblioteca' AND username = 'postgres';

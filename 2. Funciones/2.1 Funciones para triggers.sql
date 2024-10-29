@@ -28,6 +28,7 @@ RETURNS TRIGGER AS $$
 DECLARE
     f_estado_carnet BOOLEAN;
     f_recurso_textual_disponible BOOLEAN;
+    f_recurso_textual_ejemplar_disponible BOOLEAN;
     f_recurso_textual_id BIGINT;
     f_recurso_textual_stock_disp INT;
 BEGIN
@@ -45,11 +46,20 @@ BEGIN
     END IF;
 
     f_recurso_textual_disponible := (
+        SELECT RT.activo FROM tb_recurso_textual_codigo AS RTC
+                                  INNER JOIN tb_recurso_textual AS RT ON RTC.reco_rete_codigo_base = RT.rete_codigo_base
+        WHERE RTC.reco_id = NEW.pres_recurso_textual_codigo_id);
+
+    IF NOT f_recurso_textual_disponible THEN
+        RAISE EXCEPTION 'El recurso textual no se encuentra disponible';
+    END IF;
+
+    f_recurso_textual_ejemplar_disponible := (
         SELECT reco_disponible FROM tb_recurso_textual_codigo
         WHERE reco_id = NEW.pres_recurso_textual_codigo_id
     );
 
-    IF NOT f_recurso_textual_disponible THEN
+    IF NOT f_recurso_textual_ejemplar_disponible THEN
         RAISE EXCEPTION 'El recurso textual no está disponible.';
     END IF;
 
@@ -59,7 +69,7 @@ BEGIN
     );
 
     f_recurso_textual_stock_disp := (
-        SELECT COUNT(f_recurso_textual_id) FROM tb_recurso_textual_codigo
+        SELECT COUNT(reco_recurso_textual_id) FROM tb_recurso_textual_codigo
         WHERE reco_recurso_textual_id = f_recurso_textual_id AND reco_disponible = TRUE
     );
 

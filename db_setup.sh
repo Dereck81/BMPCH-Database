@@ -9,6 +9,7 @@ scripts=(\
     "3. Triggers/3. Triggers.sql"\
     "4. Procedimientos almacenados/4.1 Procedimientos almacenados - registrar.sql"\
     "4. Procedimientos almacenados/4.2 Procedimientos almacenados - otros.sql"\
+    "4. Procedimientos almacenados/4.2 Procedimientos almacenados - modificar.sql"\
     "5. Vistas.sql"\
     "6. Usuarios y roles.sql"\
     "7. Llenado general AAAA-MM-DD.sql"\

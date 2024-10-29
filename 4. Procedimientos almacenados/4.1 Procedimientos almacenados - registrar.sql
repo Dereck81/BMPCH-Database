@@ -34,22 +34,22 @@ v_id_pais_ SMALLINT;
     v_id_distrito_ BIGINT;
 BEGIN
 
-BEGIN
+    BEGIN
 
         v_id_pais_ := (SELECT P.pais_id FROM tb_pais AS P WHERE P.pais_nombre = p_pais);
 
         IF v_id_pais_ IS NULL THEN
             INSERT INTO tb_pais(pais_nombre) VALUES(p_pais)
             RETURNING pais_id INTO v_id_pais_;
-END IF;
+        END IF;
 
         v_id_region_ := (SELECT R.regi_id FROM tb_region AS R
-                         WHERE R.regi_id = v_id_pais_ AND R.regi_nombre = p_region);
+                        WHERE R.regi_id = v_id_pais_ AND R.regi_nombre = p_region);
 
         IF v_id_region_ IS NULL THEN
             INSERT INTO tb_region(regi_pais_id, regi_nombre) VALUES (v_id_pais_, p_region)
             RETURNING regi_id INTO v_id_region_;
-END IF;
+        END IF;
 
         v_id_provincia_ := (SELECT PR.prov_id FROM tb_provincia AS PR
                             WHERE PR.prov_region_id = v_id_region_ AND PR.prov_nombre = p_provincia);
@@ -57,23 +57,23 @@ END IF;
         IF v_id_provincia_ IS NULL THEN
             INSERT INTO tb_provincia(prov_region_id, prov_nombre) VALUES (v_id_region_, p_provincia)
             RETURNING prov_id INTO v_id_provincia_;
-END IF;
+        END IF;
 
         v_id_distrito_ := (SELECT D.dist_id FROM tb_distrito AS D
-                           WHERE D.dist_provincia_id = v_id_provincia_ AND D.dist_nombre = p_distrito);
+                        WHERE D.dist_provincia_id = v_id_provincia_ AND D.dist_nombre = p_distrito);
 
         IF v_id_distrito_ IS NULL THEN
             INSERT INTO tb_distrito(dist_provincia_id, dist_nombre) VALUES (v_id_provincia_, p_distrito)
             RETURNING dist_id INTO p_id_distrito;
-ELSE
+        ELSE
             p_id_distrito := v_id_distrito_;
-END IF;
+        END IF;
 
-EXCEPTION
+    EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Falló al registrar la direccion: %s', SQLERRM;
             RAISE;
-END;
+    END;
 END;
 $$;
 
@@ -113,13 +113,13 @@ v_id_distrito_ BIGINT;
     v_id_direccion_ BIGINT;
 BEGIN
 
-BEGIN
+    BEGIN
 
-CALL sp_registrar_localizacion(p_pais, p_region, p_provincia, p_distrito, v_id_distrito_);
+        CALL sp_registrar_localizacion(p_pais, p_region, p_provincia, p_distrito, v_id_distrito_);
 
-IF v_id_distrito_ IS NULL THEN
+        IF v_id_distrito_ IS NULL THEN
             RAISE EXCEPTION 'ID de distrito null';
-END IF;
+        END IF;
 
         v_id_direccion_ := (SELECT DC.dicl_id FROM tb_direccion_cliente AS DC
                             WHERE DC.dicl_distrito_id = v_id_distrito_ AND DC.dicl_direccion = p_direccion);
@@ -127,15 +127,15 @@ END IF;
         IF v_id_direccion_ IS NULL THEN
             INSERT INTO tb_direccion_cliente(dicl_distrito_id, dicl_direccion) VALUES (v_id_distrito_, p_direccion)
             RETURNING dicl_id INTO p_id_direccion;
-ELSE
+        ELSE
             p_id_direccion := v_id_direccion_;
-END IF;
+        END IF;
 
-EXCEPTION
+    EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Falló al registrar la direccion: %s', SQLERRM;
             RAISE;
-END;
+    END;
 END;
 $$;
 
@@ -181,66 +181,66 @@ v_id_direccion BIGINT;
     v_cant_direccion_cliente BIGINT;
 BEGIN
 
-BEGIN
+    BEGIN
 
         v_id_direccion := (
-            SELECT DC.dicl_id FROM tb_usuario AS U
-                                       INNER JOIN tb_cliente AS CL ON U.usua_id = CL.clie_usuario_id
-                                       INNER JOIN tb_direccion_cliente AS DC ON DC.dicl_id = CL.clie_direccion_id
-            WHERE U.usua_id = p_id_usuario
+                SELECT DC.dicl_id FROM tb_usuario AS U
+                                           INNER JOIN tb_cliente AS CL ON U.usua_id = CL.clie_usuario_id
+                                           INNER JOIN tb_direccion_cliente AS DC ON DC.dicl_id = CL.clie_direccion_id
+                WHERE U.usua_id = p_id_usuario
         );
 
         v_cant_direccion_cliente := (
-            SELECT COUNT(clie_direccion_id) FROM tb_cliente WHERE clie_direccion_id = v_id_direccion
+                SELECT COUNT(clie_direccion_id) FROM tb_cliente WHERE clie_direccion_id = v_id_direccion
         );
 
         v_id_distrito := (SELECT dist_id FROM tb_distrito WHERE dist_nombre = p_distrito);
 
-SELECT dicl_id, dicl_distrito_id INTO v_id_direccion_nueva, v_id_distrito FROM tb_direccion_cliente
-WHERE dicl_distrito_id = v_id_distrito AND dicl_direccion = p_direccion;
+        SELECT dicl_id, dicl_distrito_id INTO v_id_direccion_nueva, v_id_distrito FROM tb_direccion_cliente
+        WHERE dicl_distrito_id = v_id_distrito AND dicl_direccion = p_direccion;
 
-IF v_id_direccion_nueva = v_id_direccion THEN
+        IF v_id_direccion_nueva = v_id_direccion THEN
             RETURN;
-END IF;
+        END IF;
 
         IF v_cant_direccion_cliente >= 2 THEN
 
             IF v_id_direccion_nueva IS NULL THEN
                 CALL sp_registrar_direccion(p_pais, p_region, p_provincia, p_distrito, p_direccion, v_id_direccion_nueva);
-END IF;
+            END IF;
 
-UPDATE tb_cliente SET clie_direccion_id = v_id_direccion_nueva
-    FROM tb_usuario WHERE tb_cliente.clie_usuario_id = tb_usuario.usua_id
-                      AND tb_usuario.usua_id = p_id_usuario;
+            UPDATE tb_cliente SET clie_direccion_id = v_id_direccion_nueva
+                FROM tb_usuario WHERE tb_cliente.clie_usuario_id = tb_usuario.usua_id
+                                  AND tb_usuario.usua_id = p_id_usuario;
 
-RETURN;
-END IF;
+        RETURN;
+        END IF;
 
         IF v_id_direccion_nueva IS NULL THEN
             CALL sp_registrar_localizacion(p_pais, p_region, p_provincia, p_distrito, v_id_distrito);
 
             IF v_id_distrito IS NULL THEN
                 RAISE EXCEPTION 'ID de distrito nulo.';
-END IF;
+            END IF;
 
-UPDATE tb_direccion_cliente SET dicl_distrito_id = v_id_distrito, dicl_direccion = p_direccion
-WHERE dicl_id = v_id_direccion;
+            UPDATE tb_direccion_cliente SET dicl_distrito_id = v_id_distrito, dicl_direccion = p_direccion
+            WHERE dicl_id = v_id_direccion;
 
-ELSE
-UPDATE tb_cliente SET clie_direccion_id = v_id_direccion_nueva
-    FROM tb_usuario WHERE tb_cliente.clie_usuario_id = tb_usuario.usua_id
-                      AND tb_usuario.usua_id = p_id_usuario;
+        ELSE
+            UPDATE tb_cliente SET clie_direccion_id = v_id_direccion_nueva
+                FROM tb_usuario WHERE tb_cliente.clie_usuario_id = tb_usuario.usua_id
+                                  AND tb_usuario.usua_id = p_id_usuario;
 
-DELETE FROM tb_direccion_cliente WHERE dicl_id = v_id_direccion;
+            DELETE FROM tb_direccion_cliente WHERE dicl_id = v_id_direccion;
 
-END IF;
+        END IF;
 
-EXCEPTION
+    EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Falló al modificar la dirección del cliente: %s', SQLERRM;
             RAISE;
 
-END;
+    END;
 END;
 $$;
 
@@ -306,36 +306,36 @@ v_id_carnet BIGINT;
     v_id_usuario BIGINT;
 BEGIN
 
-BEGIN
+    BEGIN
 
-CALL sp_registrar_direccion(p_pais, p_region, p_provincia, p_distrito, p_direccion, v_id_direccion);
+        CALL sp_registrar_direccion(p_pais, p_region, p_provincia, p_distrito, p_direccion, v_id_direccion);
 
-IF v_id_direccion IS NULL THEN
-            RAISE EXCEPTION 'No se logró registrar la direccion: id direccion nulo';
-END IF;
+        IF v_id_direccion IS NULL THEN
+                    RAISE EXCEPTION 'No se logró registrar la direccion: id direccion nulo';
+        END IF;
 
-INSERT INTO tb_usuario(usua_rol_usuario_id, usua_documento, usua_tipo_documento_id, usua_psk, usua_activo)
-VALUES (2, p_documento,
-        p_tipo_documento_id, p_psk, DEFAULT)
-    RETURNING usua_id INTO v_id_usuario;
+        INSERT INTO tb_usuario(usua_rol_usuario_id, usua_documento, usua_tipo_documento_id, usua_psk, usua_activo)
+        VALUES (2, p_documento,
+                p_tipo_documento_id, p_psk, DEFAULT)
+            RETURNING usua_id INTO v_id_usuario;
 
-INSERT INTO tb_carnet(carn_tipo_estado_id, carn_codigo, carn_fec_emision, carn_fec_vencimiento)
-VALUES (1, CONCAT('BMPCH','-',v_id_usuario), DEFAULT, DEFAULT)
-    RETURNING carn_id INTO v_id_carnet;
+        INSERT INTO tb_carnet(carn_tipo_estado_id, carn_codigo, carn_fec_emision, carn_fec_vencimiento)
+        VALUES (1, CONCAT('BMPCH','-',v_id_usuario), DEFAULT, DEFAULT)
+            RETURNING carn_id INTO v_id_carnet;
 
-INSERT INTO tb_cliente(clie_nombre, clie_usuario_id, clie_apellido_paterno, clie_apellido_materno,
-                       clie_genero_id, clie_direccion_id, clie_telefono, clie_correo,
-                       clie_carnet_id, clie_nivel_educativo_id)
-VALUES (p_nombre, v_id_usuario,p_apellido_paterno, p_apellido_materno,
-        p_genero_id, v_id_direccion, p_telefono,
-        p_correo, v_id_carnet, p_nivel_educativo_id);
+        INSERT INTO tb_cliente(clie_nombre, clie_usuario_id, clie_apellido_paterno, clie_apellido_materno,
+                               clie_genero_id, clie_direccion_id, clie_telefono, clie_correo,
+                               clie_carnet_id, clie_nivel_educativo_id)
+        VALUES (p_nombre, v_id_usuario,p_apellido_paterno, p_apellido_materno,
+                p_genero_id, v_id_direccion, p_telefono,
+                p_correo, v_id_carnet, p_nivel_educativo_id);
 
-EXCEPTION
+    EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Falló al registrar a un cliente: %s', SQLERRM;
             RAISE;
 
-END;
+    END;
 
 END;
 $$;
@@ -359,7 +359,6 @@ $$;
  *
  */
 CREATE OR REPLACE PROCEDURE sp_registrar_autor(
-    p_seudonimo VARCHAR(255),
     p_nombre VARCHAR(255),
     p_apellido_paterno VARCHAR(255),
     p_apellido_materno VARCHAR(255)
@@ -367,22 +366,20 @@ CREATE OR REPLACE PROCEDURE sp_registrar_autor(
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
 
-BEGIN
+    BEGIN
 
-INSERT INTO tb_autor(auto_seudonimo, auto_nombre, auto_apellido_paterno, auto_apellido_materno)
-VALUES(p_seudonimo, p_nombre, p_apellido_paterno,
-       p_apellido_materno);
+        INSERT INTO tb_autor(auto_nombre, auto_apellido_paterno, auto_apellido_materno)
+        VALUES(p_nombre, p_apellido_paterno,
+               p_apellido_materno);
 
-EXCEPTION
+    EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Falló al crear el autor: %s', SQLERRM;
             RAISE;
 
-END;
+    END;
 
 END;
-
-
 $$;
 
 /*
@@ -403,7 +400,8 @@ $$;
  *   @p_codigo VARCHAR(255): Código del recurso textual.
  *   @p_tipo_texto_id BIGINT: ID del tipo de texto.
  *   @p_editorial_id BIGINT: ID de la editorial del recurso.
- *   @p_id_autor BIGINT: ID del autor del recurso textual.
+ *   @p_stock: Stock del recurso textual
+ *   @p_ids_autor BIGINT[]: Arreglo de IDs de autores asociados al recurso textual.
  *   @p_ids_categorias BIGINT[]: Arreglo de IDs de categorías asociadas al recurso.
  *
  * EXCEPCIONES:
@@ -417,47 +415,56 @@ CREATE OR REPLACE PROCEDURE sp_registrar_recurso_textual (
     p_numero_paginas SMALLINT,
     p_edicion SMALLINT,
     p_volumen SMALLINT,
-    p_codigo VARCHAR(255),
+    p_codigo_base VARCHAR(15),
     p_tipo_texto_id BIGINT,
     p_editorial_id BIGINT,
-    p_id_autor BIGINT,
+    p_stock BIGINT,
+    p_ids_autor BIGINT[],
     p_ids_categorias BIGINT[]
 )
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
-v_id_recurso_textual BIGINT;
+    v_id_recurso_textual BIGINT;
 BEGIN
 
-BEGIN
+    BEGIN
 
-INSERT INTO tb_recurso_textual(rete_tipo_texto_id, rete_editorial_id,
-                               rete_titulo, rete_fec_publicacion, rete_num_paginas,
-                               rete_edicion, rete_volumen)
-VALUES (p_tipo_texto_id, p_editorial_id, p_titulo, p_fecha_publicacion,
-        p_numero_paginas, p_edicion, p_volumen)
-    RETURNING rete_id INTO v_id_recurso_textual;
+        IF p_stock >= 1 THEN
+            RAISE EXCEPTION 'El stock no puede ser 0';
+        END IF;
 
-IF v_id_recurso_textual IS NULL THEN
-            RAISE EXCEPTION 'No se pudo registrar el recursos textual';
-END IF;
+        INSERT INTO tb_recurso_textual(rete_tipo_texto_id, rete_editorial_id,
+                                       rete_titulo, rete_codigo_base, rete_fec_publicacion, rete_num_paginas,
+                                       rete_edicion, rete_volumen, rete_activo)
+        VALUES (p_tipo_texto_id, p_editorial_id, p_titulo, p_codigo_base, p_fecha_publicacion,
+                p_numero_paginas, p_edicion, p_volumen, DEFAULT)
+        RETURNING rete_id INTO v_id_recurso_textual;
 
-INSERT INTO tb_recurso_textual_autor(reau_recurso_textual_id, reau_autor_id)
-VALUES (v_id_recurso_textual, p_id_autor);
+        IF v_id_recurso_textual IS NULL THEN
+                    RAISE EXCEPTION 'No se pudo registrar el recursos textual';
+        END IF;
 
-INSERT INTO tb_recurso_textual_codigo(reco_recurso_textual_id, reco_codigo, reco_disponible)
-VALUES (v_id_recurso_textual, p_codigo, TRUE);
+        FOR i IN 1..array_length(p_ids_autor, 1) LOOP
+            INSERT INTO tb_recurso_textual_autor(reau_recurso_textual_id, reau_autor_id)
+            VALUES (v_id_recurso_textual,p_ids_autor[i]);
+        END LOOP;
 
-FOR i IN 1..array_length(p_ids_categorias, 1) LOOP
-                INSERT INTO tb_categoria_recurso_textual(care_recurso_textual_id, care_categoria_id)
-                VALUES (v_id_recurso_textual, p_ids_categorias[i]);
-END LOOP;
+        FOR i IN 1..p_stock LOOP
+            INSERT INTO tb_recurso_textual_codigo(reco_rete_codigo_base, reco_codigo_ejemplar, reco_disponible)
+            VALUES (p_codigo_base, i, TRUE);
+        END LOOP;
 
-EXCEPTION
+        FOR i IN 1..array_length(p_ids_categorias, 1) LOOP
+            INSERT INTO tb_categoria_recurso_textual(care_recurso_textual_id, care_categoria_id)
+            VALUES (v_id_recurso_textual, p_ids_categorias[i]);
+        END LOOP;
+
+    EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Falló al registrar el recurso textual: %s', SQLERRM;
             RAISE;
 
-END;
+    END;
 END;
 $$;
 
@@ -479,20 +486,19 @@ $$;
  *
  */
 CREATE OR REPLACE PROCEDURE sp_registrar_codigo_recurso_textual(
-    p_id_recurso_textual BIGINT,
-    p_codigo VARCHAR(255)
+    p_id_recurso_textual BIGINT
 )
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-BEGIN
+    BEGIN
 
-INSERT INTO tb_recurso_textual_codigo(reco_recurso_textual_id, reco_codigo, reco_disponible)
-VALUES(p_id_recurso_textual, p_codigo, TRUE);
+        INSERT INTO tb_recurso_textual_codigo(reco_recurso_textual_id, reco_codigo, reco_disponible)
+        VALUES(p_id_recurso_textual, p_codigo, TRUE);
 
-EXCEPTION
+    EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Falló al registrar un recurso textual existente: %s', SQLERRM;
             RAISE;
-END;
+    END;
 END;
 $$;
