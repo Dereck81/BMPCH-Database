@@ -40,3 +40,8 @@ CREATE TRIGGER tr_verficar_carnet_cambio_estado
 BEFORE UPDATE ON tb_carnet
 FOR EACH ROW
 EXECUTE FUNCTION fn_verificar_carnet_cambio_estado();
+
+CREATE TRIGGER tr_verificar_recurso_textual_creacion
+    BEFORE INSERT OR UPDATE ON tb_recurso_textual
+    FOR EACH ROW
+EXECUTE FUNCTION fn_verificar_recurso_textual_creacion();

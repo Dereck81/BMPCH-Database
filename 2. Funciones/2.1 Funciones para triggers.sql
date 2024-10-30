@@ -137,3 +137,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION fn_verificar_recurso_textual_creacion()
+    RETURNS TRIGGER AS $$
+BEGIN
+
+    IF NEW.rete_fec_publicacion > CURRENT_DATE THEN
+        RAISE EXCEPTION 'La fecha de publicación no puede ser futura.';
+    END IF;
+
+    RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;

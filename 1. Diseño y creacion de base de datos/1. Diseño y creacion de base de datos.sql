@@ -136,7 +136,6 @@ CREATE TABLE IF NOT EXISTS tb_recurso_textual (
 	rete_edicion SMALLINT NOT NULL DEFAULT 0,
 	rete_volumen SMALLINT NOT NULL DEFAULT 0,
     rete_activo BOOLEAN NOT NULL DEFAULT TRUE,
-    CONSTRAINT chk_recurso_textual_fec_publicacion CHECK (rete_fec_publicacion <= CURRENT_DATE),
 	CONSTRAINT fk_recurso_textual_tipo_texto FOREIGN KEY (rete_tipo_texto_id) REFERENCES tb_tipo_texto(tite_id),
 	CONSTRAINT fk_recurso_textual_editorial FOREIGN KEY (rete_editorial_id) REFERENCES tb_editorial(edit_id),
 	CONSTRAINT chk_recurso_textual_numero_paginas CHECK (rete_num_paginas > 0)
