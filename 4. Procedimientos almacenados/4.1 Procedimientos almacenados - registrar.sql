@@ -82,9 +82,6 @@ $$;
  *
  * DESCRIPCIÓN:
  * Registra una nueva dirección asociada a un distrito específico.
- * Si la dirección ya existe en la base de datos, simplemente se devuelve su ID.
- * Este procedimiento también invoca al procedimiento 'sp_registrar_localizacion'
- * para asegurar que la localización esté registrada.
  *
  * PARÁMETROS:
  *   @p_pais VARCHAR(255): Nombre del país donde se registra la dirección.
@@ -121,125 +118,13 @@ BEGIN
             RAISE EXCEPTION 'ID de distrito null';
         END IF;
 
-        v_id_direccion_ := (SELECT DC.dicl_id FROM tb_direccion_cliente AS DC
-                            WHERE DC.dicl_distrito_id = v_id_distrito_ AND DC.dicl_direccion = p_direccion);
-
-        IF v_id_direccion_ IS NULL THEN
-            INSERT INTO tb_direccion_cliente(dicl_distrito_id, dicl_direccion) VALUES (v_id_distrito_, p_direccion)
-            RETURNING dicl_id INTO p_id_direccion;
-        ELSE
-            p_id_direccion := v_id_direccion_;
-        END IF;
+        INSERT INTO tb_direccion_cliente(dicl_distrito_id, dicl_direccion) VALUES (v_id_distrito_, p_direccion)
+        RETURNING dicl_id INTO p_id_direccion;
 
     EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Falló al registrar la direccion: %s', SQLERRM;
             RAISE;
-    END;
-END;
-$$;
-
-/*
- * PROCEDURE: sp_modificar_direccion
- *
- * DESCRIPCIÓN:
- * Modifica la dirección de un cliente asociado a un usuario específico.
- * Si la dirección del cliente está siendo usada por otro cliente,
- * se crea una nueva dirección y se le asigna a ese cliente.
- * En caso contrario, se modifica la dirección existente.
- *
- * PARÁMETROS:
- *   @p_id_usuario BIGINT: ID del usuario cuya dirección se desea modificar.
- *   @p_pais VARCHAR(255): Nombre del país donde se encuentra la nueva dirección.
- *   @p_region VARCHAR(255): Nombre de la región donde se encuentra la nueva dirección.
- *   @p_provincia VARCHAR(255): Nombre de la provincia donde se encuentra la nueva dirección.
- *   @p_distrito VARCHAR(255): Nombre del distrito donde se encuentra la nueva dirección.
- *   @p_direccion VARCHAR(255): La nueva dirección que se desea registrar o modificar.
- *
- * EXCEPCIONES:
- *   Si ocurre un error durante el proceso, se realiza un ROLLBACK y se genera un mensaje
- *   de aviso que notifica el error.
- *
- * NOTA IMPORTANTE:
- *  - Al llamar al procedimiento almacenado, debe usarse de la siguiente manera:
- *    CALL sp_modificar_direccion(1::BIGINT, 'Perú', 'Lima', 'Lima', 'Miraflores', 'Av. José Larco 123');
- *    Este es un ejemplo de cómo se debe llamar el procedimiento almacenado.
- */
-CREATE OR REPLACE PROCEDURE sp_modificar_direccion (
-    p_id_usuario BIGINT,
-    p_pais VARCHAR(255),
-    p_region VARCHAR(255),
-    p_provincia VARCHAR(255),
-    p_distrito VARCHAR(255),
-    p_direccion VARCHAR(255)
-)
-LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE
-v_id_direccion BIGINT;
-    v_id_distrito BIGINT;
-    v_id_direccion_nueva BIGINT;
-    v_cant_direccion_cliente BIGINT;
-BEGIN
-
-    BEGIN
-
-        v_id_direccion := (
-                SELECT DC.dicl_id FROM tb_usuario AS U
-                                           INNER JOIN tb_cliente AS CL ON U.usua_id = CL.clie_usuario_id
-                                           INNER JOIN tb_direccion_cliente AS DC ON DC.dicl_id = CL.clie_direccion_id
-                WHERE U.usua_id = p_id_usuario
-        );
-
-        v_cant_direccion_cliente := (
-                SELECT COUNT(clie_direccion_id) FROM tb_cliente WHERE clie_direccion_id = v_id_direccion
-        );
-
-        v_id_distrito := (SELECT dist_id FROM tb_distrito WHERE dist_nombre = p_distrito);
-
-        SELECT dicl_id, dicl_distrito_id INTO v_id_direccion_nueva, v_id_distrito FROM tb_direccion_cliente
-        WHERE dicl_distrito_id = v_id_distrito AND dicl_direccion = p_direccion;
-
-        IF v_id_direccion_nueva = v_id_direccion THEN
-            RETURN;
-        END IF;
-
-        IF v_cant_direccion_cliente >= 2 THEN
-
-            IF v_id_direccion_nueva IS NULL THEN
-                CALL sp_registrar_direccion(p_pais, p_region, p_provincia, p_distrito, p_direccion, v_id_direccion_nueva);
-            END IF;
-
-            UPDATE tb_cliente SET clie_direccion_id = v_id_direccion_nueva
-                FROM tb_usuario WHERE tb_cliente.clie_usuario_id = tb_usuario.usua_id
-                                  AND tb_usuario.usua_id = p_id_usuario;
-
-        RETURN;
-        END IF;
-
-        IF v_id_direccion_nueva IS NULL THEN
-            CALL sp_registrar_localizacion(p_pais, p_region, p_provincia, p_distrito, v_id_distrito);
-
-            IF v_id_distrito IS NULL THEN
-                RAISE EXCEPTION 'ID de distrito nulo.';
-            END IF;
-
-            UPDATE tb_direccion_cliente SET dicl_distrito_id = v_id_distrito, dicl_direccion = p_direccion
-            WHERE dicl_id = v_id_direccion;
-
-        ELSE
-            UPDATE tb_cliente SET clie_direccion_id = v_id_direccion_nueva
-                FROM tb_usuario WHERE tb_cliente.clie_usuario_id = tb_usuario.usua_id
-                                  AND tb_usuario.usua_id = p_id_usuario;
-
-            DELETE FROM tb_direccion_cliente WHERE dicl_id = v_id_direccion;
-
-        END IF;
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            RAISE NOTICE 'Falló al modificar la dirección del cliente: %s', SQLERRM;
-            RAISE;
-
     END;
 END;
 $$;

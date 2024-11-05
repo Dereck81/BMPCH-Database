@@ -48,11 +48,87 @@ INSERT INTO tb_editorial (edit_nombre) VALUES
 
 -- Insertar categorías
 INSERT INTO tb_categoria (cate_nombre) VALUES
-                                           ('Ficción'),
-                                           ('No ficción'),
-                                           ('Ciencia'),
-                                           ('Historia'),
-                                           ('Tecnología');
+                                           ('Obras de Referencia'),
+                                           ('Enciclopedias'),
+                                           ('Diccionarios'),
+                                           ('Publicaciones Periódicas'),
+                                           ('Bibliografías'),
+                                           ('Filosofía'),
+                                           ('Metafísica'),
+                                           ('Psicología'),
+                                           ('Lógica'),
+                                           ('Ética'),
+                                           ('Religión'),
+                                           ('Teología'),
+                                           ('Mitología'),
+                                           ('Sociología'),
+                                           ('Ciencias Políticas'),
+                                           ('Economía'),
+                                           ('Derecho'),
+                                           ('Educación'),
+                                           ('Antropología'),
+                                           ('Lingüística'),
+                                           ('Idiomas'),
+                                           ('Gramática'),
+                                           ('Matemáticas'),
+                                           ('Astronomía'),
+                                           ('Física'),
+                                           ('Química'),
+                                           ('Biología'),
+                                           ('Botánica'),
+                                           ('Zoología'),
+                                           ('Medicina'),
+                                           ('Ingeniería'),
+                                           ('Agricultura'),
+                                           ('Tecnología'),
+                                           ('Informática'),
+                                           ('Bellas Artes'),
+                                           ('Música'),
+                                           ('Arquitectura'),
+                                           ('Fotografía'),
+                                           ('Deportes'),
+                                           ('Juegos y Recreación'),
+                                           ('Literatura General'),
+                                           ('Literatura Española'),
+                                           ('Literatura Latinoamericana'),
+                                           ('Literatura Inglesa'),
+                                           ('Literatura Norteamericana'),
+                                           ('Literatura Francesa'),
+                                           ('Literatura Clásica'),
+                                           ('Poesía'),
+                                           ('Teatro'),
+                                           ('Ensayo'),
+                                           ('Historia Universal'),
+                                           ('Historia de América'),
+                                           ('Historia de Europa'),
+                                           ('Historia de Asia'),
+                                           ('Historia de África'),
+                                           ('Historia de Oceanía'),
+                                           ('Geografía'),
+                                           ('Biografías'),
+                                           ('Fondo Local'),
+                                           ('Tesis y Trabajos Académicos'),
+                                           ('Material Audiovisual'),
+                                           ('Mapoteca'),
+                                           ('Hemeroteca'),
+                                           ('Literatura Infantil'),
+                                           ('Literatura Juvenil'),
+                                           ('Cuentos Ilustrados'),
+                                           ('Comics y Manga'),
+                                           ('Libros de Texto'),
+                                           ('Material de Estudio'),
+                                           ('Guías de Aprendizaje'),
+                                           ('E-books'),
+                                           ('Recursos Electrónicos'),
+                                           ('Bases de Datos'),
+                                           ('Libros en Braille'),
+                                           ('Documentos Oficiales'),
+                                           ('Legislación'),
+                                           ('Estadísticas'),
+                                           ('Recursos Multimedia'),
+                                           ('Revistas Académicas'),
+                                           ('Actas de Congresos'),
+                                           ('Documentos de Investigación');
 
 -- Insertar tipos de préstamos
 INSERT INTO tb_tipo_prestamo (tipr_tipo) VALUES
@@ -90,15 +166,15 @@ CALL sp_registrar_clientes('Ricardo'::VARCHAR, 'Salazar'::VARCHAR, 'Hernández':
 CALL sp_registrar_clientes('Esteban'::VARCHAR, 'Cruz'::VARCHAR, 'Valenzuela'::VARCHAR, 1::SMALLINT, '55667788'::VARCHAR, 1::SMALLINT, '123450089'::VARCHAR, 'esteban.cruz@example.com'::VARCHAR, 3::SMALLINT, 'passwordEsteban102'::VARCHAR, 'Perú'::VARCHAR, 'Lima'::VARCHAR, 'Lima'::VARCHAR, 'Miraflores'::VARCHAR, 'Av. José Larco 700'::VARCHAR);
 
 -- Registrar recursos textuales
-CALL sp_registrar_recurso_textual('1984'::VARCHAR, '1949-06-08'::DATE, 328::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB006'::VARCHAR, 2::BIGINT, 2::BIGINT, 1::BIGINT, ARRAY[1]);
-CALL sp_registrar_recurso_textual('Cien años de soledad'::VARCHAR, '1967-05-30'::DATE, 471::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB007'::VARCHAR, 1::BIGINT, 1::BIGINT, 1::BIGINT, ARRAY[1]);
-CALL sp_registrar_recurso_textual('Crónica de una muerte anunciada'::VARCHAR, '1981-01-01'::DATE, 120::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB008'::VARCHAR, 1::BIGINT, 2::BIGINT, 2::BIGINT, ARRAY[1, 2]);
-CALL sp_registrar_recurso_textual('Los ojos del perro siberiano'::VARCHAR, '1995-05-01'::DATE, 134::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB009'::VARCHAR, 2::BIGINT, 3::BIGINT, 3::BIGINT, ARRAY[2]);
-CALL sp_registrar_recurso_textual('El túnel'::VARCHAR, '1948-01-01'::DATE, 280::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB010'::VARCHAR, 2::BIGINT, 4::BIGINT, 4::BIGINT, ARRAY[1]);
-CALL sp_registrar_recurso_textual('El amor en los tiempos del cólera'::VARCHAR, '1985-03-25'::DATE, 368::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB011'::VARCHAR, 2::BIGINT, 1::BIGINT, 1::BIGINT, ARRAY[1]);
-CALL sp_registrar_recurso_textual('La sombra del viento'::VARCHAR, '2001-04-17'::DATE, 576::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB012'::VARCHAR, 2::BIGINT, 2::BIGINT, 2::BIGINT, ARRAY[1]);
-CALL sp_registrar_recurso_textual('Siete años en el Tíbet'::VARCHAR, '1997-10-01'::DATE, 256::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB013'::VARCHAR, 2::BIGINT, 3::BIGINT, 3::BIGINT, ARRAY[1]);
-CALL sp_registrar_recurso_textual('Moby Dick'::VARCHAR, '1851-10-18'::DATE, 635::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB014'::VARCHAR, 2::BIGINT, 1::BIGINT, 1::BIGINT, ARRAY[3]);
+CALL sp_registrar_recurso_textual('1984'::VARCHAR, '1949-06-08'::DATE, 328::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB006'::VARCHAR, 2::BIGINT, 2::BIGINT, ARRAY[1]::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('Cien años de soledad'::VARCHAR, '1967-05-30'::DATE, 471::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB007'::VARCHAR, 1::BIGINT, 1::BIGINT, ARRAY[2]::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('Crónica de una muerte anunciada'::VARCHAR, '1981-01-01'::DATE, 120::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB008'::VARCHAR, 1::BIGINT, 2::BIGINT, ARRAY[2]::BIGINT, ARRAY[1, 2]);
+CALL sp_registrar_recurso_textual('Los ojos del perro siberiano'::VARCHAR, '1995-05-01'::DATE, 134::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB009'::VARCHAR, 2::BIGINT, 3::BIGINT, ARRAY[3]::BIGINT, ARRAY[2]);
+CALL sp_registrar_recurso_textual('El túnel'::VARCHAR, '1948-01-01'::DATE, 280::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB010'::VARCHAR, 2::BIGINT, 4::BIGINT, ARRAY[4]::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('El amor en los tiempos del cólera'::VARCHAR, '1985-03-25'::DATE, 368::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB011'::VARCHAR, 2::BIGINT, 1::BIGINT, ARRAY[1]::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('La sombra del viento'::VARCHAR, '2001-04-17'::DATE, 576::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB012'::VARCHAR, 2::BIGINT, 2::BIGINT, ARRAY[2]::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('Siete años en el Tíbet'::VARCHAR, '1997-10-01'::DATE, 256::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB013'::VARCHAR, 2::BIGINT, 3::BIGINT, ARRAY[3]::BIGINT, ARRAY[1]);
+CALL sp_registrar_recurso_textual('Moby Dick'::VARCHAR, '1851-10-18'::DATE, 635::SMALLINT, 1::SMALLINT, 1::SMALLINT, 'LIB014'::VARCHAR, 2::BIGINT, 1::BIGINT, ARRAY[1]::BIGINT, ARRAY[3]);
 
 -- Registrar códigos adicionales para recursos textuales
 CALL sp_registrar_codigo_recurso_textual(1::BIGINT, 'LIB001-2');

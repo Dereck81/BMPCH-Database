@@ -148,32 +148,33 @@ CREATE TABLE IF NOT EXISTS tb_usuario (
 	usua_tipo_documento_id SMALLINT NOT NULL,
 	usua_documento VARCHAR(20) UNIQUE NOT NULL,
 	usua_psk VARCHAR(255) NOT NULL,
+    usua_nombre VARCHAR(255) NOT NULL,
+    usua_apellido_paterno VARCHAR(255) NOT NULL,
+    usua_apellido_materno VARCHAR(255) NOT NULL,
+    usua_telefono CHAR(9) UNIQUE NOT NULL,
+    usua_genero_id SMALLINT NOT NULL,
     usua_activo BOOLEAN NOT NULL DEFAULT TRUE,
 	CONSTRAINT fk_usuario_rol_usuario FOREIGN KEY (usua_rol_usuario_id) REFERENCES tb_rol_usuario(rolu_id),
 	CONSTRAINT fk_usuario_tipo_documento FOREIGN KEY (usua_tipo_documento_id) REFERENCES tb_tipo_documento(tido_id),
-	CONSTRAINT chk_usuario_documento CHECK (usua_documento ~ '^\d{8,20}$')
+	CONSTRAINT chk_usuario_documento CHECK (usua_documento ~ '^\d{8,20}$'),
+    CONSTRAINT fk_genero FOREIGN KEY (usua_genero_id) REFERENCES tb_genero(gene_id),
+    CONSTRAINT chk_cliente_telefono CHECK (tb_usuario.usua_telefono ~ '^\d{9}$')
 );
 
 -- Tabla clientes
 CREATE TABLE IF NOT EXISTS tb_cliente (
 	clie_id BIGSERIAL PRIMARY KEY NOT NULL,
     clie_usuario_id BIGINT UNIQUE NOT NULL,
-	clie_nombre VARCHAR(255) NOT NULL,
-	clie_apellido_paterno VARCHAR(255) NOT NULL,
-	clie_apellido_materno VARCHAR(255) NOT NULL,
-	clie_genero_id SMALLINT NOT NULL,
-	clie_direccion_id BIGINT NOT NULL,
-	clie_telefono CHAR(9) UNIQUE NOT NULL,
+	clie_direccion_id BIGINT UNIQUE NOT NULL,
 	clie_correo VARCHAR(255) UNIQUE NOT NULL,
 	clie_carnet_id BIGINT UNIQUE NOT NULL,
 	clie_nivel_educativo_id SMALLINT NOT NULL,
     CONSTRAINT fk_cliente_usuario FOREIGN KEY (clie_usuario_id) REFERENCES tb_usuario(usua_id),
-	CONSTRAINT fk_cliente_genero FOREIGN KEY (clie_genero_id) REFERENCES tb_genero(gene_id),
 	CONSTRAINT fk_cliente_direccion FOREIGN KEY (clie_direccion_id) REFERENCES tb_direccion_cliente(dicl_id),
 	CONSTRAINT fk_cliente_carnet FOREIGN KEY (clie_carnet_id) REFERENCES tb_carnet(carn_id),
 	CONSTRAINT fk_cliente_nivel_educativo FOREIGN KEY (clie_nivel_educativo_id) REFERENCES tb_nivel_educativo(nied_id),
-	CONSTRAINT chk_cliente_correo CHECK (clie_correo ~ '^[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,5}$'),
-	CONSTRAINT chk_cliente_telefono CHECK (clie_telefono ~ '^\d{9}$')
+    CONSTRAINT fk_cliente_direccion FOREIGN KEY (clie_direccion_id) REFERENCES tb_direccion_cliente(dicl_id),
+	CONSTRAINT chk_cliente_correo CHECK (clie_correo ~ '^[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,5}$')
 );
 
 -- Tabla recursos_textuales_codigos
