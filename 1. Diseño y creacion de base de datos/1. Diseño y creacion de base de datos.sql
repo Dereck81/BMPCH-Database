@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS tb_autor (
 	auto_id BIGSERIAL PRIMARY KEY NOT NULL,
 	auto_nombre VARCHAR(255) NOT NULL,
 	auto_apellido_paterno VARCHAR(255) NOT NULL,
-	auto_apellido_materno VARCHAR(255) NOT NULL
+	auto_apellido_materno VARCHAR(255) NOT NULL,
+    auto_activo BOOLEAN DEFAULT TRUE
 );
 
 -- Tabla editoriales

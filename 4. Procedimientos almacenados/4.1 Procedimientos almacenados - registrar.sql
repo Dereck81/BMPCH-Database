@@ -226,48 +226,6 @@ END;
 $$;
 
 /*
- * PROCEDURE: sp_registrar_autor
- *
- * DESCRIPCIÓN:
- * Registra un nuevo autor en la base de datos.
- * Este procedimiento inserta los datos del autor en la tabla 'tb_autor'.
- *
- * PARÁMETROS:
- *   @p_seudonimo VARCHAR(255): Seudónimo del autor.
- *   @p_nombre VARCHAR(255): Nombre del autor.
- *   @p_apellido_paterno VARCHAR(255): Apellido paterno del autor.
- *   @p_apellido_materno VARCHAR(255): Apellido materno del autor.
- *
- * EXCEPCIONES:
- *   Si ocurre un error durante el proceso de inserción, se realiza un ROLLBACK y
- *   se genera un mensaje de aviso que notifica el error.
- *
- */
-CREATE OR REPLACE PROCEDURE sp_registrar_autor(
-    p_nombre VARCHAR(255),
-    p_apellido_paterno VARCHAR(255),
-    p_apellido_materno VARCHAR(255)
-)
-LANGUAGE plpgsql SECURITY DEFINER AS $$
-BEGIN
-
-    BEGIN
-
-        INSERT INTO tb_autor(auto_nombre, auto_apellido_paterno, auto_apellido_materno)
-        VALUES(p_nombre, p_apellido_paterno,
-               p_apellido_materno);
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            RAISE NOTICE 'Falló al crear el autor: %s', SQLERRM;
-            RAISE;
-
-    END;
-
-END;
-$$;
-
-/*
  * PROCEDURE: sp_registrar_recurso_textual
  *
  * DESCRIPCIÓN:
