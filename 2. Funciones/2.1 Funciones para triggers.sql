@@ -27,12 +27,11 @@ CREATE OR REPLACE FUNCTION fn_verificar_requisitos_prestamos()
 RETURNS TRIGGER AS $$
 DECLARE
     f_estado_carnet BOOLEAN;
-    f_recurso_textual_id_nuevo BIGINT;
-    f_recurso_textual_id_antiguo BIGINT;
     f_recurso_textual_disponible BOOLEAN;
     f_recurso_textual_ejemplar_disponible BOOLEAN;
-    f_recurso_textual_codigo_base VARCHAR;
-    f_recurso_textual_stock_disp INT;
+    f_recurso_textual_codigo_base_nuevo VARCHAR;
+    f_recurso_textual_codigo_base_antiguo VARCHAR;
+    f_recurso_textual_stock_disp_nuevo INT;
 BEGIN
 
     f_estado_carnet := (
@@ -58,28 +57,33 @@ BEGIN
     WHERE RTC.reco_id = NEW.pres_recurso_textual_codigo_id;
 
     IF (NOT f_recurso_textual_disponible
-        AND NEW.pres_recurso_textual_codigo_id <> OLD.pres_recurso_textual_codigo_id) THEN
+        AND COALESCE(NEW.pres_recurso_textual_codigo_id <> OLD.pres_recurso_textual_codigo_id, TRUE)) THEN
         RAISE EXCEPTION 'El recurso textual no se encuentra disponible';
     END IF;
 
     IF (NOT f_recurso_textual_ejemplar_disponible
-        AND NEW.pres_recurso_textual_codigo_id <> OLD.pres_recurso_textual_codigo_id) THEN
+        AND COALESCE(NEW.pres_recurso_textual_codigo_id <> OLD.pres_recurso_textual_codigo_id, TRUE)) THEN
         RAISE EXCEPTION 'El ejemplar del recurso textual no está disponible. (%)',
             NEW.pres_recurso_textual_codigo_id;
     END IF;
 
-    f_recurso_textual_codigo_base := (
+    f_recurso_textual_codigo_base_nuevo := (
         SELECT reco_rete_codigo_base FROM tb_recurso_textual_codigo
         WHERE reco_id = NEW.pres_recurso_textual_codigo_id
     );
 
-    f_recurso_textual_stock_disp := (
-        SELECT COUNT(reco_rete_codigo_base) FROM tb_recurso_textual_codigo
-        WHERE reco_rete_codigo_base = f_recurso_textual_codigo_base AND reco_disponible = TRUE
+    f_recurso_textual_codigo_base_antiguo := (
+        SELECT reco_rete_codigo_base FROM tb_recurso_textual_codigo
+        WHERE reco_id = OLD.pres_recurso_textual_codigo_id
     );
 
-    IF (f_recurso_textual_stock_disp < 2
-           AND f_recurso_textual_id_nuevo <> f_recurso_textual_id_antiguo) THEN
+    f_recurso_textual_stock_disp_nuevo := (
+        SELECT COUNT(reco_rete_codigo_base) FROM tb_recurso_textual_codigo
+        WHERE reco_rete_codigo_base = f_recurso_textual_codigo_base_nuevo AND reco_disponible = TRUE
+    );
+
+    IF (f_recurso_textual_stock_disp_nuevo < 2
+           AND COALESCE(f_recurso_textual_codigo_base_nuevo <> f_recurso_textual_codigo_base_antiguo, TRUE)) THEN
         RAISE EXCEPTION 'No se puede realizar la operación, debe de quedar al menos un ejemplar en la biblioteca';
     END IF;
 
