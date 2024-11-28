@@ -32,3 +32,18 @@ BEGIN
       OR CR.carn_fec_vencimiento = CURRENT_DATE - INTERVAL '1 day');
 END
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fn_actualizar_prestamos() RETURNS void AS
+$$
+DECLARE
+    id_tipo_estado_vencido BIGINT;
+BEGIN
+    -- Definir el estado vencido
+    id_tipo_estado_vencido := 3;
+
+    -- Actualización automática de estado de prestamos
+    UPDATE tb_prestamo
+    SET pres_estado_prestamo_id = id_tipo_estado_vencido
+    WHERE pres_estado_prestamo_id = 1 AND pres_fec_programada = CURRENT_DATE - INTERVAL '1 day';
+END
+$$ LANGUAGE plpgsql;

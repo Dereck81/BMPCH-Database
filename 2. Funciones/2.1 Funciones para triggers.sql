@@ -27,9 +27,11 @@ CREATE OR REPLACE FUNCTION fn_verificar_requisitos_prestamos()
 RETURNS TRIGGER AS $$
 DECLARE
     f_estado_carnet BOOLEAN;
+    f_recurso_textual_id_nuevo BIGINT;
+    f_recurso_textual_id_antiguo BIGINT;
     f_recurso_textual_disponible BOOLEAN;
     f_recurso_textual_ejemplar_disponible BOOLEAN;
-    f_recurso_textual_id BIGINT;
+    f_recurso_textual_codigo_base VARCHAR;
     f_recurso_textual_stock_disp INT;
 BEGIN
 
@@ -41,41 +43,57 @@ BEGIN
         WHERE USU.usua_id = NEW.pres_usuario_id
     );
 
-    IF NOT f_estado_carnet THEN
+    IF f_estado_carnet IS NULL THEN
+        RAISE EXCEPTION 'El usuario no tiene un carnet establecido';
+    END IF;
+
+    IF NOT f_estado_carnet AND NEW.pres_usuario_id <> OLD.pres_usuario_id THEN
         RAISE EXCEPTION 'El estado del carnet del usuario (%) no está activo', NEW.pres_usuario_id;
     END IF;
 
-    f_recurso_textual_disponible := (
-        SELECT RT.activo FROM tb_recurso_textual_codigo AS RTC
-                                  INNER JOIN tb_recurso_textual AS RT ON RTC.reco_rete_codigo_base = RT.rete_codigo_base
-        WHERE RTC.reco_id = NEW.pres_recurso_textual_codigo_id);
+    SELECT RT.rete_activo, RTC.reco_disponible
+    INTO f_recurso_textual_disponible, f_recurso_textual_ejemplar_disponible
+    FROM tb_recurso_textual_codigo AS RTC
+    INNER JOIN tb_recurso_textual AS RT ON RTC.reco_rete_codigo_base = RT.rete_codigo_base
+    WHERE RTC.reco_id = NEW.pres_recurso_textual_codigo_id;
 
-    IF NOT f_recurso_textual_disponible THEN
+    IF (NOT f_recurso_textual_disponible
+        AND NEW.pres_recurso_textual_codigo_id <> OLD.pres_recurso_textual_codigo_id) THEN
         RAISE EXCEPTION 'El recurso textual no se encuentra disponible';
     END IF;
 
-    f_recurso_textual_ejemplar_disponible := (
-        SELECT reco_disponible FROM tb_recurso_textual_codigo
-        WHERE reco_id = NEW.pres_recurso_textual_codigo_id
-    );
-
-    IF NOT f_recurso_textual_ejemplar_disponible THEN
-        RAISE EXCEPTION 'El recurso textual no está disponible.';
+    IF (NOT f_recurso_textual_ejemplar_disponible
+        AND NEW.pres_recurso_textual_codigo_id <> OLD.pres_recurso_textual_codigo_id) THEN
+        RAISE EXCEPTION 'El ejemplar del recurso textual no está disponible. (%)',
+            NEW.pres_recurso_textual_codigo_id;
     END IF;
 
-    f_recurso_textual_id := (
-        SELECT reco_recurso_textual_id FROM tb_recurso_textual_codigo
+    f_recurso_textual_codigo_base := (
+        SELECT reco_rete_codigo_base FROM tb_recurso_textual_codigo
         WHERE reco_id = NEW.pres_recurso_textual_codigo_id
     );
 
     f_recurso_textual_stock_disp := (
-        SELECT COUNT(reco_recurso_textual_id) FROM tb_recurso_textual_codigo
-        WHERE reco_recurso_textual_id = f_recurso_textual_id AND reco_disponible = TRUE
+        SELECT COUNT(reco_rete_codigo_base) FROM tb_recurso_textual_codigo
+        WHERE reco_rete_codigo_base = f_recurso_textual_codigo_base AND reco_disponible = TRUE
     );
 
-    IF f_recurso_textual_stock_disp < 2 THEN
+    IF (f_recurso_textual_stock_disp < 2
+           AND f_recurso_textual_id_nuevo <> f_recurso_textual_id_antiguo) THEN
         RAISE EXCEPTION 'No se puede realizar la operación, debe de quedar al menos un ejemplar en la biblioteca';
     END IF;
+
+    IF NEW.pres_fec_inicial <> CURRENT_DATE THEN
+        RAISE EXCEPTION 'No se puede realizar la operación, la fecha inicial no puede ser menor o mayor a la actual.';
+    END IF ;
+
+    IF NEW.pres_fec_final < NEW.pres_fec_inicial THEN
+        RAISE EXCEPTION 'No se puede realizar la operación, la fecha final no puede ser menor que la inicial.';
+    END IF;
+
+    IF NEW.pres_fec_programada < CURRENT_DATE THEN
+        RAISE EXCEPTION 'No se puede realizar la operación, la fecha programada no puede ser menor a la actual.';
+    END IF ;
 
     RETURN NEW;
 
@@ -150,3 +168,52 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fn_realizar_prestamo()
+    RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.pres_estado_prestamo_id IS NOT NULL THEN  -- UPDATE
+        -- Esto se ejecuta solamente cuando al actualizar el registro, se cambian de recurso textual
+        IF NEW.pres_recurso_textual_codigo_id <> OLD.pres_recurso_textual_codigo_id THEN
+            -- Se cambia el antigo recurso textual a reco_disponible = TRUE
+            -- debido a que deja de estar en uso por el prestamo actual.
+            UPDATE tb_recurso_textual_codigo SET reco_disponible = TRUE
+                WHERE reco_id = OLD.pres_recurso_textual_codigo_id;
+
+            /*
+             * En este caso, si el "OLD._prestamo_id <> 2" (NO DEVUELTO | [1, 3, ...])
+             se establece como reco_disponible = FALSE al nuevo recurso textual, debido a que
+             el antiguo estado era NO DEVUELTO.
+             * En el caso, de que el antiguo estado sea (DEVUELTO | 2) no se modifica, debido a que
+             se supone que el prestamo fue aceptado porque el nuevo recurso textual estaba disponible.
+             */
+            IF OLD.pres_estado_prestamo_id <> 2 THEN
+                UPDATE tb_recurso_textual_codigo SET reco_disponible = FALSE
+                WHERE reco_id = NEW.pres_recurso_textual_codigo_id;
+            END IF;
+
+        END IF;
+
+        -- CASE: NEW._prestamo_id = DEVUELTO Y OLD._prestamo_id = NO DEVUELTO
+        IF NEW.pres_estado_prestamo_id = 2 AND OLD.pres_estado_prestamo_id <> 2 THEN
+            UPDATE tb_recurso_textual_codigo SET reco_disponible = TRUE
+            WHERE reco_id = NEW.pres_recurso_textual_codigo_id;
+        END IF;
+
+        -- CASE: NEW._prestamo_id = NO DEVUELTO Y OLD._prestamo_id = DEVUELTO
+        IF NEW.pres_estado_prestamo_id = 1 AND OLD.pres_estado_prestamo_id = 2 THEN
+            UPDATE tb_recurso_textual_codigo SET reco_disponible = FALSE
+            WHERE reco_id = NEW.pres_recurso_textual_codigo_id;
+        END IF;
+    ELSE -- INSERT
+        UPDATE tb_recurso_textual_codigo SET reco_disponible = FALSE
+        WHERE reco_id = NEW.pres_recurso_textual_codigo_id;
+    END IF;
+
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+
+
+

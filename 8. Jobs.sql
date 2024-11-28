@@ -15,8 +15,14 @@ SELECT cron.schedule(
                schedule => '0 0 * * *',
                command => $$DELETE
     FROM cron.job_run_details
-    WHERE end_time < now() - interval '7 days'$$);
+    WHERE end_time < now() - interval '7 days'$$
+);
 
+SELECT cron.schedule(
+               'job_actualizar_prestamos',
+               schedule => '0 0 * * *',
+               command => 'SELECT fn_actualizar_prestamos();'
+);
 
 UPDATE cron.job SET nodename = ''
 WHERE database = 'db_biblioteca' AND username = 'postgres';

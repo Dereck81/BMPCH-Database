@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS tb_usuario (
     usua_nombre VARCHAR(255) NOT NULL,
     usua_apellido_paterno VARCHAR(255) NOT NULL,
     usua_apellido_materno VARCHAR(255) NOT NULL,
-    usua_telefono CHAR(9) UNIQUE NOT NULL,
+    usua_telefono CHAR(9) NOT NULL,
     usua_genero_id SMALLINT NOT NULL,
     usua_activo BOOLEAN NOT NULL DEFAULT TRUE,
 	CONSTRAINT fk_usuario_rol_usuario FOREIGN KEY (usua_rol_usuario_id) REFERENCES tb_rol_usuario(rolu_id),
@@ -174,7 +174,6 @@ CREATE TABLE IF NOT EXISTS tb_cliente (
 	CONSTRAINT fk_cliente_direccion FOREIGN KEY (clie_direccion_id) REFERENCES tb_direccion_cliente(dicl_id),
 	CONSTRAINT fk_cliente_carnet FOREIGN KEY (clie_carnet_id) REFERENCES tb_carnet(carn_id),
 	CONSTRAINT fk_cliente_nivel_educativo FOREIGN KEY (clie_nivel_educativo_id) REFERENCES tb_nivel_educativo(nied_id),
-    CONSTRAINT fk_cliente_direccion FOREIGN KEY (clie_direccion_id) REFERENCES tb_direccion_cliente(dicl_id),
 	CONSTRAINT chk_cliente_correo CHECK (clie_correo ~ '^[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,5}$')
 );
 
