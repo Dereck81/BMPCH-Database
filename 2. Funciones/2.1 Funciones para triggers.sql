@@ -35,19 +35,18 @@ DECLARE
 BEGIN
 
     f_estado_carnet := (
-        SELECT TIE.ties_activo FROM tb_usuario AS USU
-               INNER JOIN tb_cliente AS CLI ON USU.usua_id = CLI.clie_usuario_id
-               INNER JOIN tb_carnet AS CAR ON CAR.carn_id = CLI.clie_carnet_id
-               INNER JOIN tb_tipo_estado AS TIE ON TIE.ties_id = CAR.carn_tipo_estado_id
-        WHERE USU.usua_id = NEW.pres_usuario_id
+        SELECT TIE.ties_activo FROM tb_cliente AS CLI
+                INNER JOIN tb_carnet AS CAR ON CAR.carn_id = CLI.clie_carnet_id
+                INNER JOIN tb_tipo_estado AS TIE ON TIE.ties_id = CAR.carn_tipo_estado_id
+        WHERE CLI.clie_id = NEW.pres_cliente_id
     );
 
     IF f_estado_carnet IS NULL THEN
         RAISE EXCEPTION 'El usuario no tiene un carnet establecido';
     END IF;
 
-    IF NOT f_estado_carnet AND NEW.pres_usuario_id <> OLD.pres_usuario_id THEN
-        RAISE EXCEPTION 'El estado del carnet del usuario (%) no está activo', NEW.pres_usuario_id;
+    IF NOT f_estado_carnet AND COALESCE(NEW.pres_cliente_id <> OLD.pres_cliente_id, TRUE) THEN
+        RAISE EXCEPTION 'El estado del carnet del cliente (%) no está activo', NEW.pres_cliente_id;
     END IF;
 
     SELECT RT.rete_activo, RTC.reco_disponible
@@ -98,6 +97,18 @@ BEGIN
     IF NEW.pres_fec_programada < CURRENT_DATE THEN
         RAISE EXCEPTION 'No se puede realizar la operación, la fecha programada no puede ser menor a la actual.';
     END IF ;
+
+    IF OLD.pres_fec_final IS NOT NULL THEN
+        RAISE EXCEPTION 'No se puede modificar el prestamo, ya se estableció una fecha final';
+    END IF;
+
+    IF NEW.pres_fec_final IS NULL AND NEW.pres_estado_prestamo_id = 2 THEN
+        RAISE EXCEPTION 'No se puede realizar la operación, debido a que el prestamo está con estado devuelto y fecha final nula';
+    END IF;
+
+    IF NEW.pres_fec_final IS NOT NULL AND NEW.pres_estado_prestamo_id <> 2 THEN
+        RAISE EXCEPTION 'No se puede realizar la operación, debido a que el prestamo está con fecha final, pero el estado es diferente a devuelto';
+    END IF;
 
     RETURN NEW;
 
@@ -210,8 +221,13 @@ BEGIN
             WHERE reco_id = NEW.pres_recurso_textual_codigo_id;
         END IF;
     ELSE -- INSERT
-        UPDATE tb_recurso_textual_codigo SET reco_disponible = FALSE
-        WHERE reco_id = NEW.pres_recurso_textual_codigo_id;
+        IF NEW.pres_estado_prestamo_id <> 2 THEN
+            UPDATE tb_recurso_textual_codigo SET reco_disponible = FALSE
+            WHERE reco_id = NEW.pres_recurso_textual_codigo_id;
+        ELSE
+            UPDATE tb_recurso_textual_codigo SET reco_disponible = TRUE
+            WHERE reco_id = NEW.pres_recurso_textual_codigo_id;
+        END IF;
     END IF;
 
     RETURN NEW;

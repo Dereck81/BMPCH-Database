@@ -190,14 +190,14 @@ CREATE TABLE IF NOT EXISTS tb_recurso_textual_codigo (
 -- Tabla prestamos
 CREATE TABLE IF NOT EXISTS tb_prestamo (
 	pres_id BIGSERIAL PRIMARY KEY NOT NULL,
-	pres_usuario_id BIGINT NOT NULL,
+	pres_cliente_id BIGINT NOT NULL,
 	pres_recurso_textual_codigo_id BIGINT NOT NULL,
 	pres_tipo_prestamo_id SMALLINT NOT NULL,
 	pres_estado_prestamo_id SMALLINT NOT NULL,
 	pres_fec_inicial DATE NOT NULL DEFAULT CURRENT_DATE,
 	pres_fec_final DATE DEFAULT NULL,
 	pres_fec_programada DATE NOT NULL,
-	CONSTRAINT fk_prestamo_usuario FOREIGN KEY (pres_usuario_id) REFERENCES tb_usuario(usua_id),
+	CONSTRAINT fk_prestamo_cliente FOREIGN KEY (pres_cliente_id) REFERENCES tb_cliente(clie_id),
 	CONSTRAINT fk_prestamo_recurso_textual_codigo FOREIGN KEY (pres_recurso_textual_codigo_id) REFERENCES tb_recurso_textual_codigo(reco_id),
 	CONSTRAINT fk_prestamo_tipo_prestamo FOREIGN KEY (pres_tipo_prestamo_id) REFERENCES tb_tipo_prestamo(tipr_id),
 	CONSTRAINT fk_prestamo_estado_prestamo FOREIGN KEY (pres_estado_prestamo_id) REFERENCES tb_estado_prestamo(espr_id),
