@@ -30,3 +30,5 @@ WHERE database = 'db_biblioteca' AND username = 'postgres';
 -- SELECT * FROM cron.job;
 
 -- SELECT * FROM cron.job_run_details;
+
+-- SELECT cron.unschedule(jobid);
