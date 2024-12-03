@@ -86,7 +86,8 @@ BEGIN
         RAISE EXCEPTION 'No se puede realizar la operación, debe de quedar al menos un ejemplar en la biblioteca';
     END IF;
 
-    IF NEW.pres_fec_inicial <> CURRENT_DATE THEN
+    IF (NEW.pres_fec_inicial <> CURRENT_DATE
+            AND COALESCE(NEW.pres_fec_inicial <> OLD.pres_fec_inicial, TRUE)) THEN
         RAISE EXCEPTION 'No se puede realizar la operación, la fecha inicial no puede ser menor o mayor a la actual.';
     END IF ;
 
@@ -94,8 +95,8 @@ BEGIN
         RAISE EXCEPTION 'No se puede realizar la operación, la fecha final no puede ser menor que la inicial.';
     END IF;
 
-    IF NEW.pres_fec_programada < CURRENT_DATE THEN
-        RAISE EXCEPTION 'No se puede realizar la operación, la fecha programada no puede ser menor a la actual.';
+    IF NEW.pres_fec_programada < NEW.pres_fec_inicial THEN
+        RAISE EXCEPTION 'No se puede realizar la operación, la fecha programada no puede ser menor a la inicial.';
     END IF ;
 
     IF OLD.pres_fec_final IS NOT NULL THEN
