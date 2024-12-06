@@ -1,7 +1,7 @@
 -- Conectarse a la base de datos
 \c db_biblioteca;
 
-
+-- No cambiar
 INSERT INTO public.tb_tipo_estado (ties_tipo, ties_activo) VALUES ('Activo', true);
 INSERT INTO public.tb_tipo_estado (ties_tipo, ties_activo) VALUES ('Vencido', false);
 INSERT INTO public.tb_tipo_estado (ties_tipo, ties_activo) VALUES ('Suspendido', false);
@@ -80,17 +80,20 @@ INSERT INTO public.tb_nivel_educativo (nied_nombre) VALUES ('Secundaria');
 INSERT INTO public.tb_nivel_educativo (nied_nombre) VALUES ('Superior');
 INSERT INTO public.tb_nivel_educativo (nied_nombre) VALUES ('Postgrado');
 
+-- No cambiar
 INSERT INTO public.tb_rol_usuario (rolu_nombre) VALUES ('Administrador');
 INSERT INTO public.tb_rol_usuario (rolu_nombre) VALUES ('Cliente');
 INSERT INTO public.tb_rol_usuario (rolu_nombre) VALUES ('Bibliotecario');
 
+-- No cambiar
 INSERT INTO public.tb_tipo_documento (tido_tipo) VALUES ('DNI');
 INSERT INTO public.tb_tipo_documento (tido_tipo) VALUES ('Pasaporte');
 INSERT INTO public.tb_tipo_documento (tido_tipo) VALUES ('Carné de extranjería');
 
-INSERT INTO public.tb_usuario (usua_rol_usuario_id, usua_tipo_documento_id, usua_documento, usua_psk, usua_nombre, usua_apellido_paterno, usua_apellido_materno, usua_telefono, usua_genero_id) VALUES (1, 1, '73266267', '$2a$10$ekueVm6N0ky1JRzpnE8eJuVv6wbjlmgn2nbn11Gv6Ej46Jo0LcpQu', 'Diego Alexis', 'Llacsahuanga', 'Buques', '976849906', 2);
+INSERT INTO public.tb_usuario (usua_rol_usuario_id, usua_tipo_documento_id, usua_documento, usua_psk, usua_nombre, usua_apellido_paterno, usua_apellido_materno, usua_telefono, usua_genero_id) VALUES (1, 1, '73266267', '$2a$10$ekueVm6N0ky1JRzpnE8eJuVv6wbjlmgn2nbn11Gv6Ej46Jo0LcpQu', 'Diego Alexis', 'Llacsahuanga', 'Buques', '976849906', 1);
 INSERT INTO public.tb_usuario (usua_rol_usuario_id, usua_tipo_documento_id, usua_documento, usua_psk, usua_nombre, usua_apellido_paterno, usua_apellido_materno, usua_telefono, usua_genero_id) VALUES (1, 1, '75101157', '$2a$10$j/U3SsUH9YxRq8kTE8XC4uiyaqRVF22TQlX9YVJxVPc0Q8Wuv9qb2', 'Kevin', 'Huanca', 'Fernandez', '968370197', 1);
 
+-- No cambiar
 INSERT INTO public.tb_estado_prestamo (espr_nombre) VALUES ('Activo');
 INSERT INTO public.tb_estado_prestamo (espr_nombre) VALUES ('Devuelto');
 INSERT INTO public.tb_estado_prestamo (espr_nombre) VALUES ('Vencido');

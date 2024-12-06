@@ -216,14 +216,17 @@ CREATE TABLE IF NOT EXISTS tb_recurso_textual_autor (
 
 -- Tabla registro_acciones_usuarios
 CREATE TABLE IF NOT EXISTS tb_registro_accion_usuario (
+    reau_id BIGSERIAL PRIMARY KEY NOT NULL,
 	reau_usuario_id BIGINT NOT NULL,
     reau_detalle VARCHAR NOT NULL,
 	reau_fec_hora TIMESTAMP NOT NULL DEFAULT NOW(),
-	reau_direccion_ip VARCHAR(255) NOT NULL,
+	reau_direccion_ip VARCHAR(255) NOT NULL DEFAULT 'IP_NO_IDENTIFICADA',
 	CONSTRAINT fk_registro_accion_usuario_usuario FOREIGN KEY (reau_usuario_id) REFERENCES tb_usuario(usua_id),
 	CONSTRAINT chk_registro_accion_usuario_direccion_ip CHECK (
         reau_direccion_ip ~ '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
         OR reau_direccion_ip ~ '(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))'
+	    OR reau_direccion_ip = 'IP_NO_IDENTIFICADA'
+	    OR reau_direccion_ip = 'LOCALHOST'
 	)
 );
 
