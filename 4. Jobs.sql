@@ -11,14 +11,6 @@ SELECT cron.schedule(
 );
 
 SELECT cron.schedule(
-               'job_limpiar_registro_jobs',
-               schedule => '0 0 * * *',
-               command => $$DELETE
-    FROM cron.job_run_details
-    WHERE end_time < now() - interval '7 days'$$
-);
-
-SELECT cron.schedule(
                'job_actualizar_prestamos',
                schedule => '0 0 * * *',
                command => 'SELECT fn_actualizar_prestamos();'

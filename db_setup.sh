@@ -1,24 +1,18 @@
 #!/usr/bin/bash
 
-export PGPASSWORD="devroot"
+export PGPASSWORD="COLOQUE_LA_CONTRASEÑA_DE_POSTGRES"
 
 scripts=(\
     "2. Funciones/2.1 Funciones para triggers.sql"\
     "2. Funciones/2.2 Funciones para jobs.sql"\
     "2. Funciones/2.3 Funciones.sql"\
     "3. Triggers/3. Triggers.sql"\
-    "4. Procedimientos almacenados/4.1 Procedimientos almacenados - registrar.sql"\
-    "4. Procedimientos almacenados/4.2 Procedimientos almacenados - otros.sql"\
-    "4. Procedimientos almacenados/4.2 Procedimientos almacenados - modificar.sql"\
-    "5. Vistas.sql"\
+    "4. Jobs.sql"
+    "5. Llenado general AAAA-MM-DD.sql"\
     "6. Usuarios y roles.sql"\
-    "7. Llenado general AAAA-MM-DD.sql"\
-    "8. Jobs.sql"
 )
 
 # Creando bd_biblioteca
-
-sh install_pg_cron.sh
 
 psql -U postgres -h localhost -f "1. Diseño y creacion de base de datos/1. Diseño y creacion de base de datos.sql";
 
